@@ -1,0 +1,242 @@
+:root {
+  /* https://www.happyhues.co/palettes/10 */
+  --background: #004643;
+  --headline: #fffffe;
+  --paragraph: #abd1c6;
+  --button: #f9bc60;
+  --button-text: #001e1d;
+  --stroke: #001e1d;
+  --main: #e8e4e6;
+  --highlight: #f9bc60;
+  --secondary: #abd1c6;
+  --tertiary: #e16162;
+}
+
+/* ===== Theming */
+body {
+  background: var(--background);
+  color: var(--paragraph);
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  color: var(--headline);
+  text-align: center;
+}
+
+main {
+  background-color: var(--main);
+  color: var(--stroke);
+}
+
+button,input[type="submit"] {
+  background-color: var(--button);
+  border: none;
+  border-radius: 0.3rem;
+  color: var(--button-text);
+  padding: 0.3rem;
+}
+
+/* ===== General */
+ul {
+  list-style-type: none;
+  margin: 0 0 2rem 0;
+  padding: 0;
+}
+
+li {
+  border-bottom: 1px solid var(--stroke);
+  padding: 1rem 0.5rem 0.3rem 0.5rem;
+}
+
+[path]:not(.active) {
+  display: none;
+}
+
+/* ===== Top menu */
+menu {
+  background-color: var(--background);
+  display: flex;
+  justify-content: space-around;
+  margin: 0;
+  padding: 0;
+}
+
+menu h2 {
+  align-self: end;
+  cursor: pointer;
+  margin: 0;
+  padding-bottom: 1rem;
+  width: 100%;
+}
+
+menu .active {
+  border-bottom: 6px solid var(--secondary);
+  padding-bottom: calc(1rem - 6px);
+}
+
+/* ===== Footer */
+footer {
+  background-color: rgba(0,0,0,0.6);
+  bottom: 0;
+  left: -16px;
+  padding: 1rem;
+  position: fixed;
+  text-align: center;
+  width: 100%;
+}
+
+footer button {
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* ===== Expense list */
+.expense-list .meta {
+  float: right;
+  text-align: right;
+}
+
+.expense-list .amount {
+  font-size: 1.2rem;
+}
+
+.expense-list time, .expense-list .creditor {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding-top: 0.4rem;
+}
+
+.expense-list .placeholder {
+  display: none;
+  padding: 3rem;
+}
+.expense-list .placeholder p:first-child {
+  font-size: 1.6rem;
+}
+.expense-list.ready .placeholder:only-child {
+  display: block;
+}
+
+/* ===== Balance list */
+.balance-list li {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  --ratio: 1%;
+  padding-top: 0.5rem;
+}
+
+.balance-list .member, .balance-list .balance {
+  flex-basis: 45%;
+  margin: 0.2rem;
+  padding: 0.5rem;
+}
+
+.balance-list .positive {
+  flex-direction: row;
+}
+
+.balance-list .balance {
+  background: linear-gradient(270deg, darksalmon var(--ratio), rgba(0,0,0,0) var(--ratio), rgba(0,0,0,0) 100%);
+  text-align: right;
+}
+
+.balance-list .positive .balance {
+  background: linear-gradient(90deg, mediumseagreen var(--ratio), rgba(0,0,0,0) var(--ratio), rgba(0,0,0,0) 100%);
+  text-align: left;
+}
+
+.balance-list .positive .member {
+  text-align: right;
+}
+
+/* ===== Forms */
+form {
+  border-top: 6px solid var(--secondary);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  text-align: left;
+  --height: 3rem;
+}
+
+label {
+  font-size: 0.8rem;
+}
+
+input {
+  margin-bottom: 1rem;
+  height: var(--height);
+  font-size: cal(var(--height) / 2);
+}
+
+input[type|="radio"] {
+  height: var(--height);
+  font-size: cal(var(--height) / 2);
+}
+
+form .cancel {
+  background-color: var(--tertiary);
+}
+
+fieldset {
+  margin-bottom: 1rem;
+  padding-bottom: 0;
+}
+
+/* ===== Helpers */
+
+.checkable-group > div {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.checkable-group input:checked + label {
+  opacity: 1;
+  box-shadow: 0 0 15px  rgba(255,255,255,0.6);
+}
+
+.checkable-group > div label {
+  background-color: var(--secondary);
+  border-radius: 0.2rem;
+  cursor: pointer;
+  color: var(--stroke);
+  height: 2rem;
+  line-height: 2rem;
+  min-width: 4rem;
+  opacity: 0.5;
+  padding: 0.5rem;
+}
+
+.list-group li {
+  border-width: 0;
+  display: grid;
+  grid-column-gap: 0.3rem;
+  grid-template-columns: auto 4rem;
+  --height: 2.3rem;
+}
+
+.list-group span {
+  grid-column: 1 /1;
+  background-color: var(--secondary);
+  color: var(--stroke);
+  padding: 0.5rem;
+  border-radius: 0.3rem;
+}
+
+.list-group button {
+  grid-column: 2 /2;
+}
+
+.list-group .adder input {
+  margin: 0;
+}
+
+.list-group .item:nth-child(1n+3) {
+  padding-top: 0.2rem;
+}
+
+.list-group .remove {
+  background-color: var(--tertiary);
+}

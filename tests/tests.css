@@ -1,0 +1,23 @@
+.success {
+  color: darkgreen;
+}
+
+.failure {
+  color: red;
+}
+
+.error {
+  color: var(--stroke);
+  display: inline-block;
+  text-indent: 1em;
+}
+
+h2 {
+  color: var(--stroke);
+  text-align: left;
+  text-indent: 2rem;
+  border-bottom: 2px solid var(--stroke);
+  margin-bottom: 0;
+  margin-top: 1rem;
+  padding-bottom: 0.5rem;
+}
