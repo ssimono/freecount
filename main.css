@@ -24,6 +24,10 @@ h1, h2, h3, h4 {
   text-align: center;
 }
 
+a {
+  color: var(--secondary);
+}
+
 main {
   background-color: var(--main);
   color: var(--stroke);
@@ -73,6 +77,40 @@ menu h2 {
 menu .active {
   border-bottom: 6px solid var(--secondary);
   padding-bottom: calc(1rem - 6px);
+}
+
+/* ===== Forms */
+form {
+  border-top: 6px solid var(--secondary);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  text-align: left;
+  --height: 3rem;
+}
+
+label {
+  font-size: 0.8rem;
+}
+
+input {
+  margin-bottom: 1rem;
+  height: var(--height);
+  font-size: cal(var(--height) / 2);
+}
+
+input[type|="radio"] {
+  height: var(--height);
+  font-size: cal(var(--height) / 2);
+}
+
+form .cancel {
+  background-color: var(--tertiary);
+}
+
+fieldset {
+  margin-bottom: 1rem;
+  padding-bottom: 0;
 }
 
 /* ===== Footer */
@@ -151,38 +189,22 @@ footer button {
   text-align: right;
 }
 
-/* ===== Forms */
-form {
-  border-top: 6px solid var(--secondary);
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  text-align: left;
-  --height: 3rem;
+/* ===== Previous trips */
+.known-trips {
+  display: none;
+  text-align: center;
 }
-
-label {
-  font-size: 0.8rem;
+.known-trips li {
+  border-bottom: none;
+  display: inline-block;
+  font-size: 1.2rem;
+  padding: 0 0.2rem;
 }
-
-input {
-  margin-bottom: 1rem;
-  height: var(--height);
-  font-size: cal(var(--height) / 2);
+.known-trips li::before {
+  content: '/ '
 }
-
-input[type|="radio"] {
-  height: var(--height);
-  font-size: cal(var(--height) / 2);
-}
-
-form .cancel {
-  background-color: var(--tertiary);
-}
-
-fieldset {
-  margin-bottom: 1rem;
-  padding-bottom: 0;
+.known-trips li:first-child::before {
+  content: ''
 }
 
 /* ===== Helpers */

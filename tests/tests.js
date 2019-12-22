@@ -1,7 +1,9 @@
 import {parseRoutes} from '../lib.js'
+import {validate} from '../client.js'
 
 export default function () {
   testParseRoutes()
+  testValidate()
 }
 
 function testParseRoutes() {
@@ -34,9 +36,39 @@ function testParseRoutes() {
   })
 }
 
+function testValidate() {
+  testCase('events validation')
+
+  it('allows valid events', () => {
+    assert(validate(
+      {_id:"5dfe9cfa4c88c20017b0da51",command:"init_trip",data:{name:"Vacation Spain",currency:"EUR",members:["Chuck","Jacky","Bruce"]},version:1,_createdOn:"2019-12-21T22:30:18.724Z"},{_id:"5dff4ec789e555001711a1b2",command:"add_expense",data:{title:"First spend",amount:"32",creditor:"Simon",participants:["Simon","Pauline","Vincent"],date:"2019-12-22",currency:"EUR"},version:1,_createdOn:"2019-12-22T11:08:55.440Z"}
+    ))
+    assert(validate(
+      {_id:"5dfff89989e555001711a344",command:"add_expense",data:{title:"Hello",amount:"543.7",creditor:"Chuck",participants:["Chuck","Bruce"],date:"2019-12-22",currency:"EUR"},version:1,_createdOn:"2019-12-22T23:13:29.784Z"}
+    ))
+  })
+
+  it('disallows invalid events', () => {
+    assertThrows(() => validate({}))
+    assertThrows(() => validate({command: "unknown"}))
+    assertThrows(() => validate({command: "init_trip", version: 4}))
+    assertThrows(() => validate({command: "init_trip", _createdOn:"2019", data: null}))
+    assertThrows(() => validate({command: "init_trip", _createdOn:"2019", data: {name: '', currency: 'chf', members: []}}))
+  })
+}
+
 function assert(predicate) {
   if (predicate) return true
   else throw new Error('Bad assumption')
+}
+
+function assertThrows(fn) {
+  try {
+    fn()
+  } catch (e) {
+    return true
+  }
+  throw new Error('Should have thrown')
 }
 
 function it(title, fn) {

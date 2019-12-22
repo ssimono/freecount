@@ -1,15 +1,6 @@
-const COMMAND_VERSION = 1
-
 export function dispatch(target, name, payload) {
-  return target.dispatchEvent(new CustomEvent(name, { detail: payload, bubbles: true }))
-}
-
-export function httpPostCommand(target, command) {
-  return dispatch(target, 'app:request', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({...command, version: COMMAND_VERSION})
-  })
+  const event = new CustomEvent(name, { detail: payload, bubbles: true })
+  window.setTimeout(() => target.dispatchEvent(event), 0)
 }
 
 export function parseRoutes(strRoutes) {

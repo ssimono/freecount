@@ -1,6 +1,6 @@
 import BalanceList from './components/BalanceList.js'
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
-import Client from './client.js'
+import Client, {sync, postCommand} from './client.js'
 import {parseForm, updateMenu, handleListGroup} from './handlers/core.js'
 import * as exp from './handlers/expenses.js'
 
@@ -13,10 +13,11 @@ const routes = [
   ['click => .list-group', handleListGroup],
   ['keypress => .list-group', handleListGroup],
   ['click => menu', updateMenu],
-  ['app:error -> *', ({detail}) => alert(detail)],
+  ['app:syncerror -> *', ({detail}) => alert(detail)],
 
   // App logic
-  ['app:start -> *', ({target}) => dispatch(target, 'app:request', {})],
+  ['app:start -> *', ({target}) => dispatch(target, 'app:sync')],
+  ['app:knowntrips -> *', exp.showKnownTrips],
   ['app:submit_init_trip -> form', exp.initTrip],
   ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],
   ['app:submit_add_expense -> form', exp.addExpense],
@@ -25,32 +26,37 @@ const routes = [
 ]
 
 export default function main() {
-  let boxId = localStorage.getItem('jsonbox_id')
   const params = new URLSearchParams(window.location.search)
-
-  if (params.has('box')) {
-    localStorage.setItem('jsonbox_id', params.get('box'))
-    window.location.replace(window.location.origin + window.location.pathname)
-    return
-  } else if (params.has('logout')) {
-    localStorage.clear()
-    window.location.replace(window.location.origin + window.location.pathname)
-  } else if (!boxId) {
-    boxId = generateId(32)
-    localStorage.setItem('jsonbox_id', boxId)
-    goTo('/setup')
-  } else {
-    goTo('/trip/expenses')
-  }
-
-  const client = new Client(document.body, boxId)
+  const knownTrips = JSON.parse(localStorage.getItem('known_trips') || '{}')
+  const boxId = params.get('box') || generateId(32)
+  const client = new Client(boxId)
 
   attachRoutes(routes, document.body)
 
+  if (params.has('box')) {
+    goTo('/trip/expenses')
+  } else {
+    goTo('/setup')
+  }
+
   // Add statefull listeners
   attachRoutes([
-    ['app:request -> *', ({detail}) => {
-      client.do(detail).catch(e => dispatch(document.body, 'app:error', e.message))
+    ['app:sync -> *', sync(client)],
+    ['app:postcommand -> *', postCommand(client)],
+    ['app:did_init_trip -> body', ({detail}) => {
+      Object.assign(knownTrips, {[detail.name]: boxId})
+      localStorage.setItem('known_trips', JSON.stringify(knownTrips))
+
+      if (!params.has('box')) {
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.set('box', boxId)
+        window.location.assign(newUrl.href)
+      }
+
+      document.title = `${detail.name} | Freecount`
+    }],
+    ['app:navigate => [path="/setup"]', ({target, detail}) => {
+      dispatch(target, 'app:knowntrips', knownTrips)
     }]
   ], document.body)
 
@@ -61,13 +67,31 @@ export default function main() {
   dispatch(document.body, 'app:start')
 
   // Register the worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./worker.js')
-    .then(() => {
-      console.info('Service Worker registered… Offline support active')
-    })
-    .catch((error) => {
-      console.error(`Registration failed with ${error}`)
-    })
+  if ('serviceWorker' in navigator && !params.has('nosw')) {
+    registerSW(client)
   }
+}
+
+function registerSW(client) {
+  navigator.serviceWorker.register('./worker.js')
+  .then(reg => {
+    reg.onupdatefound = () => {
+      console.info('A new version of Service Worker available, reloading the page…')
+      setTimeout(window.location.reload(), 100)
+    }
+    console.info('Service Worker registered… Offline support active')
+  })
+  .catch((error) => {
+    console.error(`Registration failed with ${error}`)
+  })
+
+  navigator.serviceWorker.addEventListener('message', event => {
+    if ('command' in event.data) {
+      client.offset++
+      postCommand(client)({
+        target: document.body,
+        detail: event.data
+      })
+    }
+  })
 }

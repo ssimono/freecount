@@ -1,4 +1,4 @@
-import {httpPostCommand, goTo} from '../lib.js'
+import {dispatch, goTo} from '../lib.js'
 import BalanceList from '../components/BalanceList.js'
 import ExpenseItem from '../components/ExpenseItem.js'
 
@@ -40,7 +40,6 @@ export function onTripReady({target, detail}) {
 
   balanceList.setMembers(detail.members)
   balanceList.render()
-  goTo('/trip/expenses')
 }
 
 export function onNewExpense({detail}) {
@@ -64,12 +63,26 @@ export function onAddExpenseFormOpen({target}) {
 }
 
 export function initTrip({target, detail}) {
-  const command = { command: 'init_trip', data: detail }
-  httpPostCommand(target, command)
+  dispatch(target, 'app:postcommand', { command: 'init_trip', data: detail })
 }
 
 export function addExpense({target, detail}) {
-  const command = { command: 'add_expense', data: detail }
-  httpPostCommand(target, command)
+  dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
   goTo('/trip/expenses')
+}
+
+export function showKnownTrips({target, detail}) {
+  const tripNames = Object.getOwnPropertyNames(detail)
+  if (!tripNames.length) {
+    return
+  }
+  const paragraph = target.querySelector('.known-trips')
+  const tripItems = tripNames.map(name => {
+    const tripItem = document.createElement('li')
+    tripItem.innerHTML = `<a title="Open ${name}" href="./?box=${detail[name]}">${name}</a>`
+    return tripItem
+  })
+
+  paragraph.querySelector('ul').append(...tripItems)
+  paragraph.style.setProperty("display", 'block')
 }

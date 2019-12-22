@@ -1,21 +1,38 @@
-const preCache = () => {
-  caches.open('v1').then(cache => {
-    return cache.addAll([
-      './index.html'
-    ])
-  })
-}
+// Increment this to simulate a new version of the worker even if the code didn't change.
+// This will allow cache clearing and clients refresh
+const deploy_key = 2
+const cache_key = 'main'
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
+  event.waitUntil(caches.delete(cache_key))
   console.info('Service Worker install')
-  event.waitUntil(preCache())
+})
+
+self.addEventListener('fetch', event => {
+  const strategy = request => {
+    if (request.method === 'POST') {
+      return fetch(request)
+    } else if (request.url.indexOf(self.location.host) === -1) {
+      return fetchEvents(event)
+    } else {
+      return cacheFirst(request)
+    }
+  }
+
+  event.respondWith(strategy(event.request).catch(e => {
+    console.error(`Error when handling request: ${e}`)
+    return null
+  }))
 })
 
 async function fetchAndCache(request) {
   const response = await fetch(request)
-  const cache = await caches.open('v1')
+  const cache = await caches.open(cache_key)
 
-  cache.put(request, response.clone())
+  cache.put(request, response.clone()).then(() => {
+    console.debug(`Cached request: ${request.method} ${request.url}`)
+  })
+
   return response
 }
 
@@ -24,38 +41,36 @@ async function cacheFirst(request) {
   return cached || await fetchAndCache(request)
 }
 
-async function fetchFirst(request) {
-  try {
-    return await fetchAndCache(request)
-  } catch (e) {
-    return await caches.match(request)
+async function fetchEvents({request, clientId}) {
+  const cached = await caches.match(request)
+
+  if (cached) {
+    // Asynchronously check for more data
+    checkAndRefresh(request.clone(), cached.clone(), clientId)
+  } else {
+    return await fetchAndCache(request, cached, clientId)
   }
+
+  return cached
 }
 
-self.addEventListener('fetch', event => {
-  console.log(`${event.request.method} ${event.request.url}`)
+async function checkAndRefresh(request, cached, clientId) {
+  const cachedEvents = await cached.json()
+  const response = await fetch(request)
+  const freshEvents = await response.clone().json()
 
-  const strategy = request => {
-    if (request.method === 'POST') {
-      return fetch(request)
-    } else if (request.url.indexOf(self.location.host) === -1) {
-      return fetchFirst(request)
-    } else {
-      return cacheFirst(request)
-    }
+  if(freshEvents.length === cachedEvents.length) {
+    return
   }
 
-  event.respondWith(strategy(event.request).catch(
-    e => console.error(`Error when getting cached pages: ${e}`)
-  ))
-})
+  const cache = await caches.open(cache_key)
+  await cache.put(request, response)
+  const client = await clients.get(clientId)
 
-// self.addEventListener('fetch', event => {
-//   console.log(`${event.request.method} ${event.request.url}`)
-//   const proxyFunc = caches.match(event.request).then(response => {
-//     console.log(`Cached response: ${Boolean(response)}`)
-//     return response || fetchAndCache(event.request)
-//   }).catch(e => console.error(`Error when getting cached pages: ${e}`))
-//
-//   event.respondWith(proxyFunc)
-// })
+  if (client) {
+    const newEvents = freshEvents.slice(cachedEvents.length)
+    for (let evt of newEvents) {
+      client.postMessage(evt)
+    }
+  }
+}
