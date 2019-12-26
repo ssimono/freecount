@@ -1,4 +1,4 @@
-import {dispatch} from '../lib.js'
+import {dispatch} from './lib.js'
 
 const COMMAND_VERSION = 1
 const CHUNK_SIZE = 100

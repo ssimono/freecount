@@ -43,7 +43,7 @@ export default function main() {
   attachRoutes([
     ['app:sync -> *', sync(client)],
     ['app:postcommand -> *', postCommand(client)],
-    ['app:did_init_trip -> body', ({detail}) => {
+    ['app:did_init_trip -> *', ({detail}) => {
       Object.assign(knownTrips, {[detail.name]: boxId})
       localStorage.setItem('known_trips', JSON.stringify(knownTrips))
 

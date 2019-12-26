@@ -3,7 +3,7 @@ import BalanceList from '../components/BalanceList.js'
 import ExpenseItem from '../components/ExpenseItem.js'
 
 export function onTripReady({target, detail}) {
-  target.querySelector('h1').innerText = detail.name
+  document.querySelector('h1').innerText = detail.name
   document.getElementById('expense_list').classList.add('ready')
 
   const creditorChoice = document.getElementById('creditor_choice')

@@ -6,7 +6,7 @@ It is heavily inspired by [Tricount](https://www.tricount.com/), but completely 
 
 ## FAQ
 
-- **I want to use it now, what do I do?** Open https://freecount.github.io/
+- **I want to use it now, what do I do?** Open https://ssimono.github.io/freecount/ (beta)
 - **I am afraid my friends alter past expenses to screw me over.** Then you should use another tool, or change friends. Although Freecount is designed with immutable data in mind, jsonbox.io allows to DELETE or PUT past data via its API, meaning that immutability is not guaranteed.
 - **I want to self-host Freecount.** Please go ahead, it is a 100% static web app super easy to serve.
 - **I want to self-host the data too.** It turns out [jsonbox](https://github.com/vasanthv/jsonbox) is also self-hostable, but right now the API endpoint is not configurable in Freecount. This would be easy to implement though, and pull requests are welcome.
