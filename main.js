@@ -1,6 +1,6 @@
 import BalanceList from './components/BalanceList.js'
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
-import Client, {sync, postCommand} from './client.js'
+import Client, {sync, postCommand, parseAndDispatch} from './client.js'
 import {parseForm, updateMenu, handleListGroup} from './handlers/core.js'
 import * as exp from './handlers/expenses.js'
 
@@ -86,12 +86,6 @@ function registerSW(client) {
   })
 
   navigator.serviceWorker.addEventListener('message', event => {
-    if ('command' in event.data) {
-      client.offset++
-      postCommand(client)({
-        target: document.body,
-        detail: event.data
-      })
-    }
+    parseAndDispatch(client, document.body, event.data) && client.offset++
   })
 }

@@ -45,18 +45,22 @@ export default class JsonBoxClient {
 
 export function sync(client) {
   return ({target}) => {
-    client.getAllRemoteEvents().then(events => {
-      events.forEach(body => {
-        try {
-          const {command, data} = validate(body)
-          dispatch(target, `app:did_${command}`, data)
-        } catch (e) {
-          console.error(e)
-        }
-      })
-    }).catch(err => {
+    client.getAllRemoteEvents().then(events =>
+      events.forEach(payload => parseAndDispatch(client, target, payload))
+    ).catch(err => {
       dispatch(target, 'app:syncerror', err.message)
     })
+  }
+}
+
+export function parseAndDispatch(client, target, payload) {
+  try {
+    const {command, data} = validate(payload)
+    dispatch(target, `app:did_${command}`, data)
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
   }
 }
 
