@@ -117,13 +117,17 @@ fieldset {
 footer {
   background-color: rgba(0,0,0,0.6);
   bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   left: -16px;
   padding: 1rem;
   position: fixed;
   text-align: center;
   width: 100%;
 }
-
+footer .nav {
+  align-self: center;
+}
 footer button {
   cursor: pointer;
   padding: 0.5rem;
@@ -209,6 +213,10 @@ footer button {
 
 /* ===== Helpers */
 
+a.nav {
+  font-family: sans-serif;
+  text-decoration: none;
+}
 .checkable-group > div {
   display: flex;
   flex-wrap: wrap;

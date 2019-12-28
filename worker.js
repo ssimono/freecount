@@ -1,6 +1,6 @@
 // Increment this to simulate a new version of the worker even if the code didn't change.
 // This will allow cache clearing and clients refresh
-const deploy_key = 4
+const deploy_key = 5
 const cache_key = 'main'
 
 self.addEventListener('install', event => {
