@@ -134,20 +134,19 @@ footer button {
 }
 
 /* ===== Expense list */
-.expense-list .meta {
-  float: right;
-  text-align: right;
+.expense-list li {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto 1rem;
+  grid-template-areas:
+    "title title amount"
+    "creditor status date";
 }
-
-.expense-list .amount {
-  font-size: 1.2rem;
-}
-
-.expense-list time, .expense-list .creditor {
-  display: inline-block;
-  font-size: 0.8rem;
-  padding-top: 0.4rem;
-}
+.expense-list .title {grid-area: title;}
+.expense-list .amount {font-size: 1.2rem; grid-area: amount;}
+.expense-list time {grid-area: date;}
+.expense-list .creditor, .expense-list time {font-size: 0.8rem;}
+.expense-list .amount, .expense-list time {justify-self: end;}
 
 .expense-list .placeholder {
   display: none;
