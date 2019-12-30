@@ -43,35 +43,28 @@ export function updateMenu({target, currentTarget}) {
 /**
  * Handles interaction with dynamic list of items
  */
-export function handleListGroup(event) {
-  const {target, currentTarget, key, type} = event
-  if (type === 'click' && target.classList.contains('add')) {
-    const list = currentTarget.querySelector('ul')
-    const input = list.querySelector('.adder input')
-    const value = input.value.trim()
-    const prop = currentTarget.getAttribute('name')
+export function addItem(event) {
+  const input = event.currentTarget.querySelector('.adder input')
+  const value = input.value.trim()
+  const prop = event.currentTarget.getAttribute('name')
 
-    const newItem = document.createElement('li')
-    newItem.classList.add('item')
-    newItem.innerHTML =
-      `<span>${value}</span>
-       <button type="button" class="remove" title="remove item">×</button>
-       <input type="hidden" name="${prop}[]" value="${value}"/>`
-
-    input.value = ''
-    input.focus()
-
-    list.append(newItem)
-  } else if (target.classList.contains('remove')) {
-      target.closest('li').remove()
-  } else if (type === 'keypress') {
-    if (target.tagName === 'INPUT' && key === 'Enter') {
-      event.preventDefault()
-      handleListGroup({
-        currentTarget,
-        target: currentTarget.querySelector('.add'),
-        type: 'click'
-      })
-    }
+  if (value.length < parseInt(input.getAttribute('minlength'), 10)) {
+    event.preventDefault()
+    return
   }
+
+  const newItem = document.createElement('li')
+  newItem.classList.add('item')
+  newItem.innerHTML =
+    `<span>${value}</span>
+     <button type="button" class="remove" title="remove item">×</button>
+     <input type="hidden" name="${prop}[]" value="${value}"/>`
+
+  input.value = ''
+  input.focus()
+
+  event.currentTarget.append(newItem)
+}
+export function removeItem({target}) {
+  target.closest('li').remove()
 }

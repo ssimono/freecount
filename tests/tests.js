@@ -1,38 +1,44 @@
-import {parseRoutes} from '../lib.js'
+import {parseRoutes, partition} from '../lib.js'
 import {validate} from '../client.js'
 
 export default function () {
   testParseRoutes()
   testValidate()
+  testPartition()
 }
 
 function testParseRoutes() {
   testCase('parse routes')
 
   const tests = [
+    ['click', null],
     ['submit => form', null],
-    ['submit -> form', null],
-    ['click => form.active input', null],
-    ['invalid', null]
+    ['submit -> div.active', null],
+    ['click => form.active -> button', null],
+    [' ', null]
   ]
 
   const routes = parseRoutes(tests)
   const serialized = routes.map(r => JSON.stringify(r))
 
   it('parses routes', () => {
-    assert(routes.length === 3)
+    assert(routes.length === 4)
 
-    assert(routes[0].eventType === 'submit')
+    assert(routes[0].eventType === 'click')
+    assert(routes[0].selector === null)
+    assert(routes[0].delegatedSelector === null)
+
     assert(routes[1].eventType === 'submit')
-    assert(routes[2].eventType === 'click')
-
-    assert(routes[0].strategy === '=>')
-    assert(routes[1].strategy === '->')
-    assert(routes[2].strategy === '=>')
-
-    assert(routes[0].selector === 'form')
     assert(routes[1].selector === 'form')
-    assert(routes[2].selector === 'form.active input')
+    assert(routes[1].delegatedSelector === null)
+
+    assert(routes[2].eventType === 'submit')
+    assert(routes[2].selector === null)
+    assert(routes[2].delegatedSelector === 'div.active')
+
+    assert(routes[3].eventType === 'click')
+    assert(routes[3].selector === 'form.active')
+    assert(routes[3].delegatedSelector === 'button')
   })
 }
 
@@ -57,9 +63,46 @@ function testValidate() {
   })
 }
 
+function testPartition() {
+  testCase('partition function')
+
+  it('partitions', () => {
+    const p1 = partition(n => n%2 === 0, [1,2,3,4,5,6])
+    const p2 = partition(n => n%2 === 0, [2,1,3,4,5,6])
+
+    assert(p1.size === 2)
+    assert(p2.size === 2)
+
+    assertValueEquals(p1.get(true), [2,4,6])
+    assertValueEquals(p1.get(false), [1,3,5])
+  })
+
+  it('partitions by string', () => {
+    const p1 = partition('age', [
+      {name:'Dock', age: 34},
+      {name:'Dopey', age: 35},
+      {name:'Bashful', age: 12},
+      {name:'Grumpy', age: 12},
+      {name:'Sneezy', age: 17},
+      {name:'Sleepy', age: 34},
+    ])
+
+    assert(p1.size === 4)
+
+    assertValueEquals(p1.get(34).map(d => d.name), ['Dock', 'Sleepy'])
+    assertValueEquals(p1.get(35).map(d => d.name), ['Dopey'])
+    assertValueEquals(p1.get(12).map(d => d.name), ['Bashful', 'Grumpy'])
+    assertValueEquals(p1.get(17).map(d => d.name), ['Sneezy'])
+  })
+}
+
 function assert(predicate) {
   if (predicate) return true
   else throw new Error('Bad assumption')
+}
+
+function assertValueEquals(serializable, expected) {
+  return assert(JSON.stringify(serializable) === JSON.stringify(expected))
 }
 
 function assertThrows(fn) {

@@ -5,47 +5,72 @@ export function dispatch(target, name, payload) {
 
 export function parseRoutes(strRoutes) {
   return strRoutes
-  .map(([def, handler]) => {
-    const [eventType, strategy, selector] = def.split(/([\-=]>)/).map(s => s.trim())
-    return {eventType, selector, handler, strategy}
-  })
-  .filter(({selector}) => !!selector)
+    .map(([def, handler]) => [def.split(/(=>|->)/).filter(Boolean), handler, def])
+    .map(([tokens, handler, strRoute]) => {
+      if (!tokens.length) {
+        console.error(`Invalid route: "${strRoute}"`)
+        return null
+      }
+
+      const shift = tokens => tokens.shift().trim()
+      const route = {eventType: shift(tokens), selector: null, delegatedSelector: null, handler}
+
+      while(tokens.length) {
+        const token = shift(tokens)
+        switch(token.trim()) {
+          case '=>':
+            route.selector = shift(tokens)
+            break
+          case '->':
+            route.delegatedSelector = shift(tokens)
+            break
+          default:
+            console.error('Invalid route: ', strRoute)
+            return null
+        }
+      }
+
+      return route
+    })
+    .filter(Boolean)
 }
 
 export function attachRoutes(strRoutes, root) {
   const routes = parseRoutes(strRoutes)
 
-  // Attach direct routes
-  routes
-  .filter(({strategy}) => strategy === '=>')
-  .forEach(({eventType, selector, handler}) => {
-    for(let element of root.querySelectorAll(selector)) {
-      element.addEventListener(eventType, handler)
-    }
-  })
+  for (let [eventType, eventRoutes] of partition('eventType', routes)) {
+    for(let [selector, selectorRoutes] of partition('selector', eventRoutes)) {
+      const targets = selector === null
+        ? [root]
+        : document.querySelectorAll(selector)
 
-  // Attach delegated routes
-  routes
-  .filter(({strategy}) => strategy === '->')
-  .reduce((perType, {eventType, selector, handler}) => {
-    if (perType.has(eventType)) {
-      perType.get(eventType).push({selector, handler})
-    } else {
-      perType.set(eventType, [{selector, handler}])
-    }
-    return perType
-  }, new Map())
-  .forEach((routes, eventType) => {
-    root.addEventListener(eventType, (event) => {
-      const target = event.target
-      for(let {selector, handler} of routes) {
-        if (target.matches(selector)) {
-          handler(event)
-          break
+      // Attach direct handlers
+      selectorRoutes
+      .filter(({delegatedSelector}) => delegatedSelector === null)
+      .forEach(({handler}) => {
+        for(let element of targets) {
+          element.addEventListener(eventType, handler)
+        }
+      })
+
+      // Attach delegated handlers
+
+      const delegatedRoutes = selectorRoutes
+        .filter(({delegatedSelector}) => delegatedSelector !== null)
+
+      const combinedHandler = routes => event => {
+        for (let {delegatedSelector, handler} of routes) {
+          if(event.target.matches(delegatedSelector)) {
+            handler(event)
+          }
         }
       }
-    })
-  })
+
+      for(let element of targets) {
+        element.addEventListener(eventType, combinedHandler(delegatedRoutes))
+      }
+    }
+  }
 }
 
 // From https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -81,4 +106,22 @@ export function goTo(newPath) {
     const lastPage = toShow[0]
     dispatch(lastPage, 'app:navigate', lastPage.getAttribute('path'))
   }
+}
+
+export function partition(predicate, values) {
+  const pred = typeof predicate === 'string'
+    ? v => v[predicate]
+    : predicate
+
+  const map = new Map()
+  for(let v of values) {
+    const key = pred(v)
+    if (map.has(key)) {
+      map.get(key).push(v)
+    } else {
+      map.set(key, [v])
+    }
+  }
+
+  return map
 }

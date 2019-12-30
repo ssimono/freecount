@@ -1,7 +1,7 @@
 import BalanceList from './components/BalanceList.js'
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
-import {parseForm, updateMenu, handleListGroup} from './handlers/core.js'
+import {parseForm, updateMenu, addItem, removeItem} from './handlers/core.js'
 import * as exp from './handlers/expenses.js'
 
 const routes = [
@@ -10,19 +10,19 @@ const routes = [
 
   // Generic interaction helpers
   ['submit -> form', parseForm],
-  ['click => .list-group', handleListGroup],
-  ['keypress => .list-group', handleListGroup],
+  ['click => .list-group ul -> .add', addItem],
+  ['click => .list-group ul -> .remove', removeItem],
   ['click => menu', updateMenu],
-  ['app:syncerror -> *', ({detail}) => alert(detail)],
+  ['app:syncerror', ({detail}) => alert(detail)],
 
   // App logic
-  ['app:start -> *', ({target}) => dispatch(target, 'app:sync')],
-  ['app:knowntrips -> *', exp.showKnownTrips],
-  ['app:submit_init_trip -> form', exp.initTrip],
+  ['app:knowntrips', exp.showKnownTrips],
+  ['app:submit_init_trip', exp.initTrip],
+  ['app:navigate => [path="/trip/expenses"]', ({target}) => dispatch(target, 'app:sync')],
   ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],
-  ['app:submit_add_expense -> form', exp.addExpense],
-  ['app:did_init_trip -> *', exp.onTripReady],
-  ['app:did_add_expense -> *', exp.onNewExpense]
+  ['app:submit_add_expense', exp.addExpense],
+  ['app:did_init_trip', exp.onTripReady],
+  ['app:did_add_expense', exp.onNewExpense]
 ]
 
 export default function main() {
@@ -41,9 +41,9 @@ export default function main() {
 
   // Add statefull listeners
   attachRoutes([
-    ['app:sync -> *', sync(client)],
-    ['app:postcommand -> *', postCommand(client)],
-    ['app:did_init_trip -> *', ({detail}) => {
+    ['app:sync', sync(client)],
+    ['app:postcommand', postCommand(client)],
+    ['app:did_init_trip', ({detail}) => {
       Object.assign(knownTrips, {[detail.name]: boxId})
       localStorage.setItem('known_trips', JSON.stringify(knownTrips))
 
@@ -55,7 +55,7 @@ export default function main() {
 
       document.title = `${detail.name} | Freecount`
     }],
-    ['app:navigate => [path="/setup"]', ({target, detail}) => {
+    ['app:navigate -> [path="/setup"]', ({target, detail}) => {
       dispatch(target, 'app:knowntrips', knownTrips)
     }]
   ], document.body)
