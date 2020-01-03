@@ -1,10 +1,11 @@
-import {parseRoutes, partition} from '../lib.js'
+import {html, parseRoutes, partition} from '../lib.js'
 import {validate} from '../client.js'
 
 export default function () {
   testParseRoutes()
   testValidate()
   testPartition()
+  testHtml()
 }
 
 function testParseRoutes() {
@@ -22,7 +23,7 @@ function testParseRoutes() {
   const serialized = routes.map(r => JSON.stringify(r))
 
   it('parses routes', () => {
-    assert(routes.length === 4)
+    assert(routes.length === 5)
 
     assert(routes[0].eventType === 'click')
     assert(routes[0].selector === null)
@@ -95,6 +96,25 @@ function testPartition() {
     assertValueEquals(p1.get(17).map(d => d.name), ['Sneezy'])
   })
 }
+
+function testHtml() {
+  testCase('html escape function')
+  it('works', () => {
+    const name = '<script>alert("you got hacked")</script>'
+    const result = html`
+      <p>
+        Hello ${name}...<strong name="heading-${'5" malicious="l337'}">${'and welcome'}</strong>
+      </p>`
+
+    assert(result.tagName === 'P')
+    assert(result.querySelector('strong').innerText === 'and welcome')
+    assert(result.querySelector('script') === null)
+    assert(result.innerText.indexOf('<script>') > 0)
+    assert(result.querySelector('strong').getAttribute('malicious') === null)
+    assert(result.querySelector('strong').getAttribute('name') ==='heading-5" malicious="l337')
+  })
+}
+
 
 function assert(predicate) {
   if (predicate) return true

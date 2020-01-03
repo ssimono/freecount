@@ -1,3 +1,4 @@
+import {html} from '../lib.js'
 import {pretty} from './utils.js'
 
 export default class BalanceList extends HTMLUListElement {
@@ -47,16 +48,9 @@ function balanceItem(max, member, balance){
     const positive = balance >= 0
     const ratio = Math.abs(balance) / Math.max(Math.abs(max, 1))
 
-    const li = document.createElement('li')
-    li.style.setProperty("--ratio", `${ratio * 100}%`)
-    if (positive) {
-      li.classList.add('positive')
-    }
-
-    li.innerHTML = `
-      <span class="member">${member}</span>
-      <data class="balance" value="${balance}">${pretty(balance, true)}</data>
-    `
-
-    return li
+    return html`
+      <li class="${positive ? 'positive':''}" style="--ratio: ${ratio*100}%;">
+        <span class="member">${member}</span>
+        <data class="balance" value="${balance}">${pretty(balance, true)}</data>
+      </li>`
 }

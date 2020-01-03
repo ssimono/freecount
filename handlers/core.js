@@ -1,4 +1,4 @@
-import {dispatch} from '../lib.js'
+import {dispatch, html} from '../lib.js'
 
 /**
  * Parses a submitted form and emit an event with the content as Object
@@ -53,12 +53,13 @@ export function addItem(event) {
     return
   }
 
-  const newItem = document.createElement('li')
-  newItem.classList.add('item')
-  newItem.innerHTML =
-    `<span>${value}</span>
-     <button type="button" class="remove" title="remove item">×</button>
-     <input type="hidden" name="${prop}[]" value="${value}"/>`
+  const newItem = html`
+    <li class="item">
+      <span>${value}</span>
+      <button type="button" class="remove" title="remove item">×</button>
+      <input type="hidden" name="${prop}[]" value="${value}"/>
+    </li>
+  `
 
   input.value = ''
   input.focus()

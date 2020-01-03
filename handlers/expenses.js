@@ -1,4 +1,4 @@
-import {dispatch, goTo} from '../lib.js'
+import {dispatch, goTo, html} from '../lib.js'
 import BalanceList from '../components/BalanceList.js'
 import ExpenseItem from '../components/ExpenseItem.js'
 
@@ -11,31 +11,15 @@ export function onTripReady({target, detail}) {
   const balanceList = document.getElementById('balance_list')
 
   detail.members.forEach((member, idx) => {
-    const radio = document.createElement('input'),
-          checkbox = document.createElement('input'),
-          creditorLabel = document.createElement('label'),
-          participantsLabel = document.createElement('label')
+    creditorChoice.append(
+      html`<input type="radio" name="creditor" id="add_expense_creditor_${idx}" value="${member}" required></input>`,
+      html`<label for="add_expense_creditor_${idx}">${member}</label>`
+    )
 
-    radio.setAttribute('type', 'radio')
-    radio.setAttribute('name', 'creditor')
-    radio.setAttribute('id', `add_expense_creditor_${idx}`)
-    radio.setAttribute('value', member)
-    radio.setAttribute('required', true)
-
-    creditorLabel.setAttribute('for', `add_expense_creditor_${idx}`)
-    creditorLabel.innerText = member
-
-    checkbox.setAttribute('type', 'checkbox')
-    checkbox.setAttribute('name', 'participants[]')
-    checkbox.setAttribute('id', `add_expense_participant_${idx}`)
-    checkbox.setAttribute('value', member)
-    checkbox.setAttribute('checked', true)
-
-    participantsLabel.setAttribute('for', `add_expense_participant_${idx}`)
-    participantsLabel.innerText = member
-
-    creditorChoice.append(radio, creditorLabel)
-    participantsChoice.append(checkbox, participantsLabel)
+    participantsChoice.append(
+      html`<input type="checkbox" name="participants[]" id="add_expense_participant_${idx}" value="${member}" checked></input>`,
+      html`<label for="add_expense_participant_${idx}">${member}</label>`
+    )
   })
 
   balanceList.setMembers(detail.members)
@@ -77,11 +61,9 @@ export function showKnownTrips({target, detail}) {
     return
   }
   const paragraph = target.querySelector('.known-trips')
-  const tripItems = tripNames.map(name => {
-    const tripItem = document.createElement('li')
-    tripItem.innerHTML = `<a title="Open ${name}" href="./?box=${detail[name]}">${name}</a>`
-    return tripItem
-  })
+  const tripItems = tripNames.map(name =>
+    html`<li><a title="Open ${name}" href="./?box=${detail[name]}">${name}</a></li>`
+  )
 
   paragraph.querySelector('ul').append(...tripItems)
   paragraph.style.setProperty("display", 'block')

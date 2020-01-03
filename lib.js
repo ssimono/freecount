@@ -125,3 +125,54 @@ export function partition(predicate, values) {
 
   return map
 }
+
+export function html(parts, ...args) {
+  const randomPrefix = generateId(8)
+  const placeholder = n => `<!--${randomPrefix} ${n}-->`
+  const container = document.createElement('div')
+
+  container.innerHTML = parts.slice(1).reduce(
+    (inner, part, idx) => inner + placeholder(idx) + part,
+    parts[0]
+  )
+
+  if (container.children.length > 1) {
+    throw new Error('html must return only one root element')
+  }
+
+  let replaced = 0
+  const commentType = NodeFilter.SHOW_COMMENT|NodeFilter.SHOW_CDATA_SECTION,
+        elementType = NodeFilter.SHOW_ELEMENT,
+        nodes = document.createNodeIterator(container, commentType|elementType),
+        placeholderPattern = new RegExp(`<!--${randomPrefix} (\\d)-->`)
+
+  for(let node = nodes.nextNode() ; node !== null ; node = nodes.nextNode()) {
+    if (node.nodeType & commentType) {
+      const [prefix, idx] = node.nodeValue.split(' ')
+      if (prefix !== randomPrefix) {
+        continue
+      }
+
+      node.replaceWith(document.createTextNode(`${args[parseInt(idx, 10)]}`))
+      replaced++
+    } else if ((node.nodeType & elementType) && node.attributes.length) {
+      for(let attr of Array.from(node.attributes)) {
+        const sanitized = attr.value.replace(
+          placeholderPattern,
+          (match, idx) => `${args[idx]}`
+        )
+
+        if (sanitized !== attr.value) {
+          node.setAttribute(attr.name, sanitized)
+          replaced++
+        }
+      }
+    }
+  }
+
+  if (replaced !== args.length) {
+    throw new Error('could not insert dynamic parts of the template string')
+  }
+
+  return container.firstElementChild
+}
