@@ -69,10 +69,10 @@ export function postCommand(client) {
     dispatch(target, 'app:http_request_start')
     client.postCommand(detail).then(body => {
       const {command, data} = validate(body)
-      dispatch(target, `app:did_${command}`, data)
-      dispatch(target, 'app:http_request_stop')
+      dispatch(target, `app:just_did_${command}`, data)
     }).catch(err => {
       dispatch(target, 'app:syncerror', err.message)
+    }).finally(() => {
       dispatch(target, 'app:http_request_stop')
     })
   }

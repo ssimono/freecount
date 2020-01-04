@@ -25,6 +25,12 @@ export function onNewExpense({detail}) {
   document.getElementById('expense_list').prepend(expenseItem(detail))
 }
 
+export function onImmediateNewExpense({detail}) {
+  const newItem = expenseItem(detail)
+  newItem.classList.add('immediate')
+  document.getElementById('expense_list').prepend(newItem)
+}
+
 export function onAddExpenseFormOpen({target}) {
   const titleInput = target.querySelector('form [name="title"]')
   const dateInput = target.querySelector('form [name="date"]')
@@ -45,14 +51,14 @@ export function initTrip({target, detail}) {
 export function addExpense({target, detail}) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
   target.addEventListener(
-    'app:did_add_expense',
+    'app:just_did_add_expense',
     () => goTo('/trip/expenses'),
     { once:true }
   )
 }
 
 function expenseItem (expense) {
-  return html `<li>
+  return html`<li>
     <span class="title">${expense.title}</span>
     <data class="amount" value="${expense.amount}">${pretty(expense.amount)}</data>
     <span class="creditor">paid by ${expense.creditor}</span>

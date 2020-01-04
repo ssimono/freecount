@@ -154,6 +154,7 @@ footer button {
     "title title amount"
     "creditor status date";
 }
+.expense-list .immediate:nth-child(n+2) {display: none;}
 .expense-list .title {grid-area: title;}
 .expense-list .amount {font-size: 1.2rem; grid-area: amount;}
 .expense-list time {grid-area: date;}

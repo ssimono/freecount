@@ -46,7 +46,7 @@ export function updateMenu({target, currentTarget}) {
 export function addItem(event) {
   const input = event.currentTarget.querySelector('.adder input')
   const value = input.value.trim()
-  const prop = event.currentTarget.getAttribute('name')
+  const prop = event.target.closest('.list-group').getAttribute('name')
 
   if (value.length < parseInt(input.getAttribute('minlength'), 10)) {
     event.preventDefault()

@@ -31,6 +31,7 @@ const routes = [
   ['app:did_init_trip', exp.onTripReady],
   ['app:did_init_trip', balanceOnInitTrip],
   ['app:did_add_expense', exp.onNewExpense],
+  ['app:just_did_add_expense', exp.onImmediateNewExpense],
   ['app:did_add_expense', balanceOnNewExpense],
 ]
 
@@ -52,16 +53,14 @@ export default function main() {
   attachRoutes([
     ['app:sync', sync(client)],
     ['app:postcommand', postCommand(client)],
+    ['app:just_did_init_trip', () => {
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.set('box', boxId)
+      window.location.assign(newUrl.href)
+    }],
     ['app:did_init_trip', ({detail}) => {
       Object.assign(knownTrips, {[detail.name]: boxId})
       localStorage.setItem('known_trips', JSON.stringify(knownTrips))
-
-      if (!params.has('box')) {
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.set('box', boxId)
-        window.location.assign(newUrl.href)
-      }
-
       document.title = `${detail.name} | Freecount`
     }],
     ['app:navigate -> [path="/setup"]', ({target, detail}) => {
