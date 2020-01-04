@@ -44,7 +44,11 @@ export function initTrip({target, detail}) {
 
 export function addExpense({target, detail}) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
-  goTo('/trip/expenses')
+  target.addEventListener(
+    'app:did_add_expense',
+    () => goTo('/trip/expenses'),
+    { once:true }
+  )
 }
 
 function expenseItem (expense) {

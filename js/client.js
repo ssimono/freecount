@@ -66,11 +66,14 @@ export function parseAndDispatch(client, target, payload) {
 
 export function postCommand(client) {
   return ({target, detail}) => {
+    dispatch(target, 'app:http_request_start')
     client.postCommand(detail).then(body => {
       const {command, data} = validate(body)
       dispatch(target, `app:did_${command}`, data)
+      dispatch(target, 'app:http_request_stop')
     }).catch(err => {
       dispatch(target, 'app:syncerror', err.message)
+      dispatch(target, 'app:http_request_stop')
     })
   }
 }

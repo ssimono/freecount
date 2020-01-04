@@ -1,8 +1,8 @@
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
 
-import {showKnownTrips} from './handlers/setupPage.js'
 import {parseForm, updateMenu, addItem, removeItem} from './handlers/general.js'
+import {showKnownTrips} from './handlers/setupPage.js'
 import * as exp from './handlers/expenses.js'
 import {
   onInitTrip as balanceOnInitTrip,
@@ -19,6 +19,8 @@ const routes = [
   ['click => .list-group ul -> .remove', removeItem],
   ['click => menu', updateMenu],
   ['app:syncerror', ({detail}) => alert(detail)],
+  ['app:http_request_start', ({currentTarget}) => currentTarget.classList.add('loading')],
+  ['app:http_request_stop', ({currentTarget}) => currentTarget.classList.remove('loading')],
 
   // App logic
   ['app:knowntrips', showKnownTrips],
