@@ -1,6 +1,5 @@
 import {dispatch, goTo, html} from '../lib.js'
-import BalanceList from '../components/BalanceList.js'
-import ExpenseItem from '../components/ExpenseItem.js'
+import {pretty} from './utils.js'
 
 export function onTripReady({target, detail}) {
   document.querySelector('h1').innerText = detail.name
@@ -8,7 +7,6 @@ export function onTripReady({target, detail}) {
 
   const creditorChoice = document.getElementById('creditor_choice')
   const participantsChoice = document.getElementById('participants_choice')
-  const balanceList = document.getElementById('balance_list')
 
   detail.members.forEach((member, idx) => {
     creditorChoice.append(
@@ -21,16 +19,10 @@ export function onTripReady({target, detail}) {
       html`<label for="add_expense_participant_${idx}">${member}</label>`
     )
   })
-
-  balanceList.setMembers(detail.members)
-  balanceList.render()
 }
 
 export function onNewExpense({detail}) {
-  document.getElementById('expense_list').prepend(ExpenseItem(detail))
-  const balanceList = document.getElementById('balance_list')
-  balanceList.onNewExpense(detail)
-  balanceList.render()
+  document.getElementById('expense_list').prepend(expenseItem(detail))
 }
 
 export function onAddExpenseFormOpen({target}) {
@@ -55,16 +47,11 @@ export function addExpense({target, detail}) {
   goTo('/trip/expenses')
 }
 
-export function showKnownTrips({target, detail}) {
-  const tripNames = Object.getOwnPropertyNames(detail)
-  if (!tripNames.length) {
-    return
-  }
-  const paragraph = target.querySelector('.known-trips')
-  const tripItems = tripNames.map(name =>
-    html`<li><a title="Open ${name}" href="./?box=${detail[name]}">${name}</a></li>`
-  )
-
-  paragraph.querySelector('ul').append(...tripItems)
-  paragraph.style.setProperty("display", 'block')
+function expenseItem (expense) {
+  return html `<li>
+    <span class="title">${expense.title}</span>
+    <data class="amount" value="${expense.amount}">${pretty(expense.amount)}</data>
+    <span class="creditor">paid by ${expense.creditor}</span>
+    <time date="${expense.date}">${(new Date(expense.date)).toDateString().slice(0, -5)}</time>
+  </li>`
 }

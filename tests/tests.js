@@ -1,5 +1,5 @@
-import {html, parseRoutes, partition} from '../lib.js'
-import {validate} from '../client.js'
+import {html, parseRoutes, partition} from '../js/lib.js'
+import {validate} from '../js/client.js'
 
 export default function () {
   testParseRoutes()

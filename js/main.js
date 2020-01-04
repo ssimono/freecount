@@ -1,8 +1,13 @@
-import BalanceList from './components/BalanceList.js'
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
-import {parseForm, updateMenu, addItem, removeItem} from './handlers/core.js'
+
+import {showKnownTrips} from './handlers/setupPage.js'
+import {parseForm, updateMenu, addItem, removeItem} from './handlers/general.js'
 import * as exp from './handlers/expenses.js'
+import {
+  onInitTrip as balanceOnInitTrip,
+  onNewExpense as balanceOnNewExpense
+} from './handlers/balance.js'
 
 const routes = [
   // Navigation
@@ -16,13 +21,15 @@ const routes = [
   ['app:syncerror', ({detail}) => alert(detail)],
 
   // App logic
-  ['app:knowntrips', exp.showKnownTrips],
+  ['app:knowntrips', showKnownTrips],
   ['app:submit_init_trip', exp.initTrip],
   ['app:navigate => [path="/trip/expenses"]', ({target}) => dispatch(target, 'app:sync')],
   ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],
   ['app:submit_add_expense', exp.addExpense],
   ['app:did_init_trip', exp.onTripReady],
-  ['app:did_add_expense', exp.onNewExpense]
+  ['app:did_init_trip', balanceOnInitTrip],
+  ['app:did_add_expense', exp.onNewExpense],
+  ['app:did_add_expense', balanceOnNewExpense],
 ]
 
 export default function main() {
@@ -59,9 +66,6 @@ export default function main() {
       dispatch(target, 'app:knowntrips', knownTrips)
     }]
   ], document.body)
-
-  // Set up custom elements
-  customElements.define('balance-list', BalanceList, { extends: 'ul' })
 
   // Launch the start event
   dispatch(document.body, 'app:start')
