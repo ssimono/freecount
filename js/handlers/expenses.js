@@ -21,6 +21,11 @@ export function onTripReady({target, detail}) {
   })
 }
 
+export function onRefreshButtonClicked(event) {
+  event.preventDefault()
+  dispatch(event.target, 'app:sync')
+}
+
 export function onNewExpense({detail}) {
   document.getElementById('expense_list').prepend(expenseItem(detail))
 }
@@ -50,11 +55,10 @@ export function initTrip({target, detail}) {
 
 export function addExpense({target, detail}) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
-  target.addEventListener(
-    'app:just_did_add_expense',
-    () => goTo('/trip/expenses'),
-    { once:true }
-  )
+  target.addEventListener('app:just_did_add_expense', () => {
+    dispatch(target, 'app:sync')
+    goTo('/trip/expenses')
+  }, { once:true })
 }
 
 function expenseItem (expense) {

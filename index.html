@@ -66,6 +66,7 @@
       <h2 to="/trip/balance">Balance</h2>
     </menu>
     <section path="/trip/expenses">
+      <div class="spinner"></div>
       <ul id="expense_list" class="expense-list">
         <li class="placeholder">
           <p>You haven't spent anything yet, well done!</p>
@@ -75,6 +76,7 @@
       <footer>
         <a href="./" title="Home page" class="nav">❮ Home</a>
         <button to="/add_expense" title="Add an expense">Add an expense</button>
+        <a href="#" title="Refresh the expenses" role="button" class="nav" id="refresh_button">↻ Refresh</a>
       </footer>
     </section>
     <section path="/trip/balance">

@@ -45,11 +45,12 @@ export default class JsonBoxClient {
 
 export function sync(client) {
   return ({target}) => {
+    dispatch(target, 'app:http_request_start')
     client.getAllRemoteEvents().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))
     ).catch(err => {
       dispatch(target, 'app:syncerror', err.message)
-    })
+    }).finally(() => dispatch(target, 'app:http_request_stop'))
   }
 }
 
@@ -72,9 +73,7 @@ export function postCommand(client) {
       dispatch(target, `app:just_did_${command}`, data)
     }).catch(err => {
       dispatch(target, 'app:syncerror', err.message)
-    }).finally(() => {
-      dispatch(target, 'app:http_request_stop')
-    })
+    }).finally(() => dispatch(target, 'app:http_request_stop'))
   }
 }
 

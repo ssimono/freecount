@@ -23,9 +23,9 @@ const routes = [
   ['app:http_request_stop', ({currentTarget}) => currentTarget.classList.remove('loading')],
 
   // App logic
+  ['click => #refresh_button', exp.onRefreshButtonClicked],
   ['app:knowntrips', showKnownTrips],
   ['app:submit_init_trip', exp.initTrip],
-  ['app:navigate => [path="/trip/expenses"]', ({target}) => dispatch(target, 'app:sync')],
   ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],
   ['app:submit_add_expense', exp.addExpense],
   ['app:did_init_trip', exp.onTripReady],
@@ -45,6 +45,7 @@ export default function main() {
 
   if (params.has('box')) {
     goTo('/trip/expenses')
+    dispatch(document.body, 'app:sync')
   } else {
     goTo('/setup')
   }
