@@ -42,7 +42,7 @@ export function attachRoutes(strRoutes, root) {
     for(let [selector, selectorRoutes] of partition('selector', eventRoutes)) {
       const targets = selector === null
         ? [root]
-        : document.querySelectorAll(selector)
+        : root.querySelectorAll(selector)
 
       // Attach direct handlers
       selectorRoutes
