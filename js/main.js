@@ -1,7 +1,7 @@
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
 
-import {parseForm, updateMenu, addItem, removeItem} from './handlers/general.js'
+import {checkPull, parseForm, updateMenu, addItem, removeItem} from './handlers/general.js'
 import {showKnownTrips} from './handlers/setupPage.js'
 import * as exp from './handlers/expenses.js'
 import {
@@ -33,6 +33,9 @@ const routes = [
   ['app:did_add_expense', exp.onNewExpense],
   ['app:just_did_add_expense', exp.onImmediateNewExpense],
   ['app:did_add_expense', balanceOnNewExpense],
+  ['touchstart => h1,[path="/trip"]', checkPull],
+  ['app:pulldown', () => dispatch(document.body, 'app:sync')],
+  ['app:start', exp.toggleRefreshButton]
 ]
 
 export default function main() {

@@ -61,6 +61,14 @@ export function addExpense({target, detail}) {
   }, { once:true })
 }
 
+export function toggleRefreshButton() {
+  // Hide the explicit refresh if the touch events are enabled
+  if (navigator.maxTouchPoints > 0) {
+    const button = document.getElementById('refresh_button')
+    button.parentNode.removeChild(button)
+  }
+}
+
 function expenseItem (expense) {
   return html`<li>
     <span class="title">${expense.title}</span>
