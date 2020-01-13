@@ -232,8 +232,10 @@ a.nav {
   text-decoration: none;
 }
 .checkable-group > div {
-  display: flex;
-  flex-wrap: wrap;
+  --cols: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1rem calc(100% / var(--cols) - 1rem));
+  padding-right: 1rem;
 }
 
 .checkable-group input:checked + label {
@@ -248,6 +250,7 @@ a.nav {
   color: var(--stroke);
   height: 2rem;
   line-height: 2rem;
+  margin-left: 3px;
   min-width: 4rem;
   opacity: 0.5;
   padding: 0.5rem;
