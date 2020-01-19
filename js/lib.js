@@ -153,8 +153,25 @@ export function html(parts, ...args) {
         continue
       }
 
-      node.replaceWith(document.createTextNode(`${args[parseInt(idx, 10)]}`))
-      replaced++
+      const arg = args[parseInt(idx, 10)]
+
+      if (arg instanceof Element) {
+        node.replaceWith(arg)
+        replaced++
+      } else if (arg instanceof Array) {
+        const parent = node.parentElement
+        for(let child of arg) {
+          if (!child instanceof Element) {
+            throw new Error(`Dynamic array placeholder contains non DOM Element: ${child}`)
+          }
+          parent.insertBefore(child, node)
+        }
+        parent.removeChild(node)
+        replaced++
+      } else {
+        node.replaceWith(document.createTextNode(`${arg}`))
+        replaced++
+      }
     } else if ((node.nodeType & elementType) && node.attributes.length) {
       for(let attr of Array.from(node.attributes)) {
         const sanitized = attr.value.replace(

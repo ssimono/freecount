@@ -1,10 +1,12 @@
 import {html, parseRoutes, partition} from '../js/lib.js'
 import {validate} from '../js/client.js'
+import {computeDebts} from '../js/handlers/balance.js'
 import testAttachRoutes from './testAttachRoutes.js'
 
 export default function () {
   suite('Events validation', testValidate)
   suite('partition function', testPartition)
+  suite('debt calculation', testComputeDebts)
   suite('HTML escape function', testHtml)
   suite('Event routing system', () => {
     suite('parsing', testParseRoutes)
@@ -97,6 +99,38 @@ function testPartition() {
   })
 }
 
+function testComputeDebts() {
+  test('accurately computes reimbursment strategy (creditor majority)', () => {
+    const balances = new Map([
+      ['Marco', 30.23],
+      ['Christopher', 990.93],
+      ['Thomas', -1021.17],
+    ])
+
+    assert.sameDeepMembers(computeDebts(balances), [
+      {creditor: 'Christopher', debtor: 'Thomas', amount:990.93},
+      {creditor: 'Marco', debtor: 'Thomas', amount:30.23}
+    ])
+  })
+
+  test('accurately computes reimbursment strategy (debtor majority)', () => {
+    const balances = new Map([
+      ['Marco', -300],
+      ['Christopher', -300],
+      ['Thomas', 400],
+      ['Vasco', -100],
+      ['Erik', 300]
+    ])
+
+    assert.sameDeepMembers(computeDebts(balances), [
+      {creditor: 'Erik', debtor: 'Marco', amount:300},
+      {creditor: 'Thomas', debtor: 'Vasco', amount:100},
+      {creditor: 'Thomas', debtor: 'Christopher', amount:300}
+    ])
+
+  })
+}
+
 function testHtml() {
   test('safely escape html body and attributes', () => {
     const name = '<script>alert("you got hacked")</script>'
@@ -111,5 +145,14 @@ function testHtml() {
     assert.isTrue(result.innerText.indexOf('<script>') > 0)
     assert.equal(result.querySelector('strong').getAttribute('malicious'), null)
     assert.equal(result.querySelector('strong').getAttribute('name'), 'heading-5" malicious="l337')
+  })
+
+  test('inserts dynamic DOM elements', () => {
+    const child = html`<span class="child">SPAN</span>`
+    const parent = html`<p>Insert a ${child} here</p>`
+    const grandParent = html`<div>${[parent, parent.cloneNode(true), parent.cloneNode(true)]}<div>`
+
+    assert.equal(parent.querySelector('.child').innerText, 'SPAN')
+    assert.lengthOf(grandParent.querySelectorAll('.child'), 3)
   })
 }

@@ -1,4 +1,4 @@
-import {html} from '../lib.js'
+import {html, partition} from '../lib.js'
 import {pretty} from './utils.js'
 
 export function onNewExpense({detail}) {
@@ -52,6 +52,53 @@ function renderBalances(target) {
   for(let [member, balance] of balances) {
     target.append(balanceItem(max, member, balance))
   }
+
+  renderDebts(target.nextElementSibling, computeDebts(target.state))
+}
+
+
+function renderDebts(target, debts) {
+  target.classList.toggle('fed', !!debts.length)
+  const makeDebt = debt => html`
+    <li>
+      <em>${debt.debtor}</em>
+      gives <data value="${debt.amount}">${pretty(debt.amount)}</data>
+      to <em>${debt.creditor}</em>
+    </li>`
+
+  target.removeChild(target.lastElementChild);
+  target.append(html`<ul>${debts.map(makeDebt)}</ul>`)
+}
+
+export function computeDebts(balances) {
+  const sortedBalances = Array
+    .from(balances.entries())
+    .sort(([aName, aAmount], [bName, bAmount]) => aAmount <= bAmount)
+  const splitBalances = partition(([name, amount]) => amount >= 0, sortedBalances)
+  const creditors = splitBalances.get(true) || []
+  const debtors = (splitBalances.get(false) || []).map(([name, amount]) => [name, Math.abs(amount)])
+  const debts = []
+
+  while(creditors.length && debtors.length) {
+    const [creditor, credit] = creditors[0]
+    const [debtor, debt] = debtors[0]
+
+    if (credit < debt) {
+      debts.push({creditor, debtor, amount: credit})
+      creditors.shift()
+      debtors[0][1] += credit
+    } else if (credit > debt) {
+      debts.push({creditor, debtor, amount: debt})
+      debtors.shift()
+      creditors[0][1] -= debt
+    } else {
+      debts.push({creditor, debtor, amount: debt})
+      debtors.shift()
+      creditors.shift()
+    }
+  }
+
+  return debts
 }
 
 function balanceItem(max, member, balance){

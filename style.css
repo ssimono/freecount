@@ -21,9 +21,13 @@ body {
   overscroll-behavior-y: contain; /* Prevents native pull to refresh on Mobile Chrome */
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3 {
   color: var(--headline);
   text-align: center;
+}
+
+h4 {
+  color: var(--stroke);
 }
 
 a {
@@ -205,6 +209,21 @@ footer button {
 
 .balance-list .positive .member {
   text-align: right;
+}
+
+.debt-list{
+  display: none;
+  padding: 0.5rem;
+}
+.debt-list.fed {
+  display: inherit;
+}
+.debt-list li {
+  border: none;
+  padding-top: 0.2rem;
+}
+.debt-list ul {
+  list-style-type: disc;
 }
 
 /* ===== Previous trips */
