@@ -72,7 +72,11 @@ export function postCommand(client) {
       const {command, data} = validate(body)
       dispatch(target, `app:just_did_${command}`, data)
     }).catch(err => {
-      dispatch(target, 'app:syncerror', err.message)
+      if(err.message.indexOf('NetworkError') !== -1) {
+        dispatch(target, 'app:posterror', {err, payload: detail})
+      } else {
+        dispatch(target, 'app:syncerror', err.message)
+      }
     }).finally(() => dispatch(target, 'app:http_request_stop'))
   }
 }

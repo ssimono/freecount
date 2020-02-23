@@ -36,6 +36,23 @@ export function onImmediateNewExpense({detail}) {
   document.getElementById('expense_list').prepend(newItem)
 }
 
+export function onLocalNewExpense({detail}) {
+  const newItem = expenseItem(detail)
+  newItem.classList.add('local')
+  document.getElementById('expense_list').prepend(newItem)
+}
+
+export function clearLocal() {
+  const localExpenses = document.querySelectorAll('#expense_list .local')
+  if (!localExpenses) {
+    return
+  }
+
+  for(let local of localExpenses) {
+    local.parentNode.removeChild(local)
+  }
+}
+
 export function onAddExpenseFormOpen({target}) {
   const titleInput = target.querySelector('form [name="title"]')
   const dateInput = target.querySelector('form [name="date"]')
@@ -55,7 +72,7 @@ export function initTrip({target, detail}) {
 
 export function addExpense({target, detail}) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
-  target.addEventListener('app:just_did_add_expense', () => {
+  target.addEventListener('app:http_request_stop', () => {
     dispatch(target, 'app:sync')
     goTo('/trip/expenses')
   }, { once:true })

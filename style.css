@@ -166,6 +166,7 @@ footer button {
 .expense-list time {grid-area: date;}
 .expense-list .creditor, .expense-list time {font-size: 0.8rem;}
 .expense-list .amount, .expense-list time {justify-self: end;}
+.expense-list .local { background-color: var(--button);}
 
 .expense-list .placeholder {
   display: none;

@@ -32,6 +32,8 @@ const routes = [
   ['app:did_init_trip', balanceOnInitTrip],
   ['app:did_add_expense', exp.onNewExpense],
   ['app:just_did_add_expense', exp.onImmediateNewExpense],
+  ['app:failed_to_add_expense', exp.onLocalNewExpense],
+  ['app:sync', exp.clearLocal],
   ['app:did_add_expense', balanceOnNewExpense],
   ['touchstart => h1,[path="/trip"]', checkPull],
   ['app:pulldown', () => dispatch(document.body, 'app:sync')],
@@ -69,6 +71,21 @@ export default function main() {
     }],
     ['app:navigate -> [path="/setup"]', ({target, detail}) => {
       dispatch(target, 'app:knowntrips', knownTrips)
+    }],
+    ['app:posterror', ({target, detail}) => {
+      const localCommands = JSON.parse(localStorage.getItem('local_commands') || '[]')
+      const payload = detail.payload
+      localStorage.setItem('local_commands', JSON.stringify([].concat(localCommands, payload)))
+      dispatch(target, `app:failed_to_${payload.command}`, payload.data)
+    }],
+    ['app:sync', ({target, detail}) => {
+      const localCommands = JSON.parse(localStorage.getItem('local_commands') || '[]')
+      if (localCommands.length) {
+        localStorage.setItem('local_commands', '[]')
+        target.addEventListener('app:http_request_stop', () => {
+          localCommands.forEach(c => postCommand(client)({target, detail: c}))
+        }, {once: true})
+      }
     }]
   ], document.body)
 
