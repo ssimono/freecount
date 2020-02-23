@@ -71,15 +71,24 @@ function renderDebts(target, debts) {
 }
 
 export function computeDebts(balances) {
-  const sortedBalances = Array
-    .from(balances.entries())
-    .sort(([aName, aAmount], [bName, bAmount]) => aAmount <= bAmount)
-  const splitBalances = partition(([name, amount]) => amount >= 0, sortedBalances)
+  const splitBalances = partition(
+    ([name, amount]) => amount >= 0,
+    Array.from(balances.entries())
+  )
+
   const creditors = splitBalances.get(true) || []
-  const debtors = (splitBalances.get(false) || []).map(([name, amount]) => [name, Math.abs(amount)])
+  const debtors = (splitBalances.get(false) || [])
+    .map(([name, amount]) => [name, Math.abs(amount)])
+
+  const sortFunction = ([aName, aAmount], [bName, bAmount]) => bAmount - aAmount
   const debts = []
 
   while(creditors.length && debtors.length) {
+    creditors.sort(sortFunction)
+    debtors.sort(sortFunction)
+
+    console.log(JSON.stringify(creditors) + ' / ' + JSON.stringify(debtors))
+
     const [creditor, credit] = creditors[0]
     const [debtor, debt] = debtors[0]
 

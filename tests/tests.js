@@ -123,11 +123,10 @@ function testComputeDebts() {
     ])
 
     assert.sameDeepMembers(computeDebts(balances), [
-      {creditor: 'Erik', debtor: 'Marco', amount:300},
-      {creditor: 'Thomas', debtor: 'Vasco', amount:100},
-      {creditor: 'Thomas', debtor: 'Christopher', amount:300}
+      {creditor: 'Thomas', debtor: 'Marco', amount:300},
+      {creditor: 'Erik', debtor: 'Christopher', amount:300},
+      {creditor: 'Thomas', debtor: 'Vasco', amount:100}
     ])
-
   })
 }
 
