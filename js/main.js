@@ -44,6 +44,7 @@ export default function main() {
   const params = new URLSearchParams(window.location.search)
   const knownTrips = JSON.parse(localStorage.getItem('known_trips') || '{}')
   const boxId = params.get('box') || generateId(32)
+  const localCommandsKey = `${boxId}_commands`
   const client = new Client(boxId)
 
   attachRoutes(routes, document.body)
@@ -73,15 +74,15 @@ export default function main() {
       dispatch(target, 'app:knowntrips', knownTrips)
     }],
     ['app:posterror', ({target, detail}) => {
-      const localCommands = JSON.parse(localStorage.getItem('local_commands') || '[]')
+      const localCommands = JSON.parse(localStorage.getItem(localCommandsKey) || '[]')
       const payload = detail.payload
-      localStorage.setItem('local_commands', JSON.stringify([].concat(localCommands, payload)))
+      localStorage.setItem(localCommandsKey, JSON.stringify([].concat(localCommands, payload)))
       dispatch(target, `app:failed_to_${payload.command}`, payload.data)
     }],
     ['app:sync', ({target, detail}) => {
-      const localCommands = JSON.parse(localStorage.getItem('local_commands') || '[]')
+      const localCommands = JSON.parse(localStorage.getItem(localCommandsKey) || '[]')
       if (localCommands.length) {
-        localStorage.setItem('local_commands', '[]')
+        localStorage.setItem(localCommandsKey, '[]')
         target.addEventListener('app:http_request_stop', () => {
           localCommands.forEach(c => postCommand(client)({target, detail: c}))
         }, {once: true})
