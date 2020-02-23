@@ -87,8 +87,6 @@ export function computeDebts(balances) {
     creditors.sort(sortFunction)
     debtors.sort(sortFunction)
 
-    console.log(JSON.stringify(creditors) + ' / ' + JSON.stringify(debtors))
-
     const [creditor, credit] = creditors[0]
     const [debtor, debt] = debtors[0]
 
