@@ -12,13 +12,13 @@ export function onInitTrip({detail}) {
 }
 
 function _onInitTrip({target, detail}) {
-  target.state = new Map()
-  target.state.clear()
+  const balances = new Map()
   for (let m of detail.members) {
-    target.state.set(m, 0)
+    balances.set(m, 0)
   }
 
-  renderBalances(target)
+  render(target, balances)
+  target.cache = balances
 }
 
 function _onNewExpense({target, detail}) {
@@ -28,41 +28,61 @@ function _onNewExpense({target, detail}) {
     return
   }
 
-  const balances = target.state
+  if(!target.cache) {
+    target.cache = getBalanceMap(target)
+  }
+
+  const balances = target.cache
   const nAmount = Number(amount)
   const share = nAmount / participants.length
 
   balances.set(creditor, balances.get(creditor) + nAmount)
-
-  for (let p of participants) {
-    balances.set(p, balances.get(p) - share)
+  for(let member of participants) {
+    balances.set(member, balances.get(member) - share)
   }
 
-  renderBalances(target)
+  render(target, balances)
 }
 
-function renderBalances(target) {
-  const balances = target.state
-  const max = Math.max(...Array.from(balances.values()).map(b => Math.abs(b)))
+function getBalanceMap(target) {
+  const balanceMap = new Map()
+  for(let dt of target.querySelectorAll('dt')) {
+    const dd = dt.nextElementSibling
 
-  while (target.firstChild) {
-    target.removeChild(target.firstChild);
+    const member = dt.innerText
+    const balance = Number(dd.dataset.value)
+
+    balanceMap.set(member, balance)
   }
+
+  return balance
+}
+
+function render(target, balances) {
+  while (target.firstChild) target.removeChild(target.firstChild);
+
+  let max = 1
 
   for(let [member, balance] of balances) {
-    target.append(balanceItem(max, member, balance))
+    const className = balance >= 0 && 'positive' || 'negative'
+    target.append(
+      html`<dt class="${className}">${member}</dt>`,
+      html`<dd data-value="${balance}" style="--balance: ${parseInt(balance)}" class="${className}">${pretty(balance, true)}</dd>`
+    )
+    max = Math.max(max, balance)
   }
 
-  renderDebts(target.nextElementSibling, computeDebts(target.state))
-}
+  target.style.setProperty("--max", parseInt(max))
 
+  renderDebts(target.nextElementSibling, computeDebts(balances))
+}
 
 function renderDebts(target, debts) {
   target.classList.toggle('fed', !!debts.length)
   const makeDebt = debt => html`
     <li>
       <em>${debt.debtor}</em>
-      gives <data value="${debt.amount}">${pretty(debt.amount)}</data>
+      gives <strong><data value="${debt.amount}">${pretty(debt.amount)}</data></strong>
       to <em>${debt.creditor}</em>
     </li>`
 
@@ -106,15 +126,4 @@ export function computeDebts(balances) {
   }
 
   return debts
-}
-
-function balanceItem(max, member, balance){
-    const positive = balance >= 0
-    const ratio = Math.abs(balance) / Math.max(Math.abs(max, 1))
-
-    return html`
-      <li class="${positive ? 'positive':''}" style="--ratio: ${ratio*100}%;">
-        <span class="member">${member}</span>
-        <data class="balance" value="${balance}">${pretty(balance, true)}</data>
-      </li>`
 }

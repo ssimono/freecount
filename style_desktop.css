@@ -16,8 +16,8 @@ menu .active {
   padding-bottom: 1rem;
 }
 
-main [path="/trip/balance"]:not(.active) {
-  display: inherit;
+main [path]:not(.active) {
+  display: block;
 }
 main [path="/trip/expenses"]{
   height: 70vh;

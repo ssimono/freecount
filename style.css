@@ -180,39 +180,41 @@ footer button {
 }
 
 /* ===== Balance list */
-.balance-list li {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: center;
-  --ratio: 1%;
-  padding-top: 0.5rem;
+.balance-list {
+  display: grid;
+  grid-auto-flow: dense;
+  grid-template-columns: auto auto;
+  padding: 0 1rem;
 }
 
-.balance-list .member, .balance-list .balance {
-  flex-basis: 45%;
-  margin: 0.2rem;
+.balance-list dd, .balance-list dt {
+  align-self: center;
+  margin: 0.2rem 0;
   padding: 0.5rem;
 }
 
-.balance-list .positive {
-  flex-direction: row;
+.balance-list dt.negative {
+  grid-column: 2 / span 1;
 }
 
-.balance-list .balance {
-  background: linear-gradient(270deg, darksalmon var(--ratio), rgba(0,0,0,0) var(--ratio), rgba(0,0,0,0) 100%);
+.balance-list dt.positive {
   text-align: right;
 }
 
-.balance-list .positive .balance {
+.balance-list dd.negative {
+  --ratio: calc(100% * (1 + var(--balance) / var(--max, 1)));
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) var(--ratio), darksalmon var(--ratio), darksalmon 100%);
+  grid-column: 1 / span 1;
+  text-align: right;
+}
+
+.balance-list dd.positive {
+  --ratio: calc(100% * var(--balance) / var(--max, 1));
   background: linear-gradient(90deg, mediumseagreen var(--ratio), rgba(0,0,0,0) var(--ratio), rgba(0,0,0,0) 100%);
-  text-align: left;
-}
-
-.balance-list .positive .member {
-  text-align: right;
 }
 
 .debt-list{
+  border-top: 1px solid var(--stroke);
   display: none;
   padding: 0.5rem;
 }
