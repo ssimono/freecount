@@ -33,24 +33,21 @@
 
   <section path="/setup">
     <h2>Let's start a trip</h2>
-    <form class="init-trip" name="init_trip">
+    <json-form name="init_trip" class="init-trip">
       <label for="init_trip_name">Trip name</label>
       <input type="text" id="init_trip_name" name="name" autocomplete="off" required/>
 
       <input type="hidden" name="currency" value="EUR" readonly/>
 
-      <fieldset class="list-group" name="members">
-        <legend>Who's joining?</legend>
-        <ul>
-          <li class="adder">
-            <input type="text" placeholder="Put a name here" minlength="1" />
-            <button type="button" class="add">Add</button>
-          </li>
-        </ul>
-      </fieldset>
-
+      <label>Who's joining?</label>
+      <input-list class="list-group" min-items="2" add-label="Who else?">
+          <template>
+            <input type="text" name="members[]" placeholder="Put a name here" minlength="1" required/>
+          </template>
+      </input-list>
       <input type="submit" name="submit" value="Go!"/>
-    </form>
+    </json-form>
+
     <div class="known-trips">
       <h3>Previous trips</h3>
       <ul></ul>
@@ -91,7 +88,7 @@
 
   <section path="/add_expense">
     <h2>Add an expense</h2>
-    <form class="add-expense" name="add_expense">
+    <json-form class="add-expense" name="add_expense">
       <label for="add_expense_title">Title</label>
       <input type="text" id="add_expense_title" name="title" autocomplete="off" required/>
 
@@ -114,7 +111,7 @@
 
       <input type="submit" name="submit" value="Add" />
       <button type="button" title="Cancel" to="/trip/expenses" class="cancel">Cancel</button>
-    </form>
+    </json-form>
   </section>
 
   <script type="module">

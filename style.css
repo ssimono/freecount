@@ -122,13 +122,8 @@ input[type|="radio"] {
   font-size: cal(var(--height) / 2);
 }
 
-form .cancel {
+form .cancel, form .remove {
   background-color: var(--tertiary);
-}
-
-fieldset {
-  margin-bottom: 1rem;
-  padding-bottom: 0;
 }
 
 /* ===== Footer */
@@ -278,36 +273,36 @@ a.nav {
   padding: 0.5rem;
 }
 
-.list-group li {
-  border-width: 0;
+.list-group {
   display: grid;
-  grid-column-gap: 0.3rem;
-  grid-template-columns: auto 4rem;
-  --height: 2.3rem;
+  grid-column-gap: 4px;
+  grid-row-gap: 4px;
+  grid-template-columns: 1fr auto;
 }
 
-.list-group span {
+.list-group input {
   grid-column: 1 /1;
-  background-color: var(--secondary);
-  color: var(--stroke);
-  padding: 0.5rem;
-  border-radius: 0.3rem;
+  margin-bottom: 0;
 }
 
-.list-group button {
-  grid-column: 2 /2;
+.list-group input.permanent {
+  grid-column: 1 / span 2;
 }
 
-.list-group .adder input {
-  margin: 0;
-}
-
-.list-group .item:nth-child(1n+3) {
-  padding-top: 0.2rem;
+.list-group .add {
+  grid-column: 1 / span 1;
+  margin-bottom: 1rem;
 }
 
 .list-group .remove {
   background-color: var(--tertiary);
+  grid-column: 2 /2;
+  margin: 5px;
+  width: calc(0.8 * var(--height));
+}
+
+.list-group .remove:disabled {
+  display: none;
 }
 
 .spinner {

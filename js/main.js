@@ -1,7 +1,10 @@
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
+import JsonForm from '/js/components/JsonForm.js'
+import InputList from '/js/components/InputList.js'
+
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
 
-import {checkPull, parseForm, updateMenu, addItem, removeItem} from './handlers/general.js'
+import {checkPull, updateMenu} from './handlers/general.js'
 import {showKnownTrips} from './handlers/setupPage.js'
 import * as exp from './handlers/expenses.js'
 import {
@@ -14,9 +17,6 @@ const routes = [
   ['click -> [to]', ({target}) => goTo(target.getAttribute('to'))],
 
   // Generic interaction helpers
-  ['submit -> form', parseForm],
-  ['click => .list-group ul -> .add', addItem],
-  ['click => .list-group ul -> .remove', removeItem],
   ['click => menu', updateMenu],
   ['app:syncerror', ({detail}) => alert(detail)],
   ['app:http_request_start', ({currentTarget}) => currentTarget.classList.add('loading')],
@@ -46,6 +46,9 @@ export default function main() {
   const boxId = params.get('box') || generateId(32)
   const localCommandsKey = `${boxId}_commands`
   const client = new Client(boxId)
+
+  customElements.define('json-form', JsonForm)
+  customElements.define('input-list', InputList)
 
   attachRoutes(routes, document.body)
 
