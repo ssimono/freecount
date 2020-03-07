@@ -1,6 +1,6 @@
 // Increment this to simulate a new version of the worker even if the code didn't change.
 // This will allow cache clearing and clients refresh
-const deploy_key = 13
+const deploy_key = 16
 const cache_key = 'main'
 
 self.addEventListener('install', event => {
@@ -12,10 +12,10 @@ self.addEventListener('fetch', event => {
   const strategy = request => {
     if (request.method === 'POST') {
       return fetch(request)
-    } else if (request.url.indexOf(self.location.host) === -1) {
-      return fetchEvents(event)
-    } else {
+    } else if (request.url.indexOf(self.location.host) >= 0 || request.url.indexOf('dev.jspm.io') >= 0) {
       return cacheFirst(request)
+    } else {
+      return fetchEvents(event)
     }
   }
 

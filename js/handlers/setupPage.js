@@ -1,15 +1,16 @@
 import {html} from '../lib.js'
 
 export function showKnownTrips({target, detail}) {
-  const tripNames = Object.getOwnPropertyNames(detail)
-  if (!tripNames.length) {
+  const boxIds = Object.getOwnPropertyNames(detail)
+  if (!boxIds.length) {
     return
   }
   const paragraph = target.querySelector('.known-trips')
-  const tripItems = tripNames.map(name =>
-    html`<li><a title="Open ${name}" href="./?box=${detail[name]}">${name}</a></li>`
-  )
+  const items = boxIds.map(boxId => {
+    const item = detail[boxId]
+    return html`<li><a title="Open ${item.title}" href="./?box=${boxId}">${item.title}</a></li>`
+  })
 
-  paragraph.querySelector('ul').append(...tripItems)
+  paragraph.querySelector('ul').append(...items)
   paragraph.style.setProperty("display", 'block')
 }

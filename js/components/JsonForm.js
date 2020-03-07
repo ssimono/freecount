@@ -16,6 +16,8 @@ export default class JsonForm extends HTMLElement {
       this.validate.bind(this),
       this.format.bind(this),
     ))
+
+    this._form = form
   }
 
   validate(payload) {
@@ -24,6 +26,36 @@ export default class JsonForm extends HTMLElement {
 
   format(payload) {
     return payload
+  }
+
+  static showErrors(form, errors) {
+    const generic = errors.filter(e => !e.name)
+    const specific = errors.filter(e => !!e.name)
+
+    for(let err of specific) {
+      let inputs = form.querySelectorAll(`[name="${err.name}"]`)
+      if (!inputs.length) {
+        generic.push(err)
+        continue
+      }
+
+      for(let input of inputs) {
+        input.setCustomValidity(err.error)
+        input.addEventListener(
+          'change',
+          () => clearErrors(input.form, input.getAttribute('name')),
+          {once: true}
+        )
+      }
+    }
+
+    const errorContainer = form.querySelector('.errors')
+    if (errorContainer && generic.length) {
+      errorContainer.innerText = generic.map(e => e.error).join(' — ')
+      form.addEventListener('change', () => errorContainer.innerText = '', {once: true})
+    } else if (generic.length) {
+      alert(generic.map(e => e.error).join(' — '))
+    }
   }
 }
 
@@ -44,34 +76,6 @@ function submitHandler(validator, formatter) {
       )
     }
   }
-}
-
-function showErrors(form, errors) {
-  const generic = errors.filter(e => !e.name)
-  const specific = errors.filter(e => !!e.name)
-
-  for(let err of specific) {
-    let inputs = form.querySelectorAll(`[name="${err.name}"]`)
-    if (!inputs.length) {
-      generic.push(err)
-      continue
-    }
-
-    for(let input of inputs) {
-      input.setCustomValidity(err.error)
-      input.addEventListener(
-        'change',
-        () => clearErrors(input.form, input.getAttribute('name')),
-        {once: true}
-      )
-    }
-  }
-
-    const errorContainer = form.querySelector('.errors')
-    if (errorContainer && generic.length) {
-      errorContainer.innerText = generic.map(e => e.error).join(' — ')
-      form.addEventListener('change', () => errorContainer.innerText = '', {once: true})
-    }
 }
 
 function clearErrors(form, name) {

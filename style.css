@@ -98,13 +98,17 @@ menu .active {
 }
 
 /* ===== Forms */
-form {
+form, .form-like {
   border-top: 6px solid var(--secondary);
   display: flex;
   flex-direction: column;
   padding: 0.5rem;
   text-align: left;
   --height: 3rem;
+}
+
+form .form-like {
+  border-top: none;
 }
 
 label {
@@ -120,6 +124,10 @@ input {
 input[type|="radio"] {
   height: var(--height);
   font-size: cal(var(--height) / 2);
+}
+
+input[type="submit"] {
+  margin-top: 1em;
 }
 
 form .cancel, form .remove {
@@ -287,6 +295,15 @@ a.nav {
   min-width: 4rem;
   opacity: 0.5;
   padding: 0.5rem;
+}
+
+.toggle input {
+  height: inherit;
+  margin: 5px;
+}
+
+.toggle label {
+  font-size: inherit;
 }
 
 item-list {

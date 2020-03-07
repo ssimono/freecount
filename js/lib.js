@@ -1,6 +1,13 @@
+import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
+
 export function dispatch(target, name, payload) {
+  if (payload instanceof Promise) {
+    payload.then(load => dispatch(target, name, load)).catch(console.error)
+    return
+  }
+
   const event = new CustomEvent(name, { detail: payload, bubbles: true })
-  window.setTimeout(() => target.dispatchEvent(event), 0)
+  setTimeout(() => target.dispatchEvent(event), 0)
 }
 
 export function parseRoutes(strRoutes) {
@@ -193,3 +200,27 @@ export function html(parts, ...args) {
 
   return container.firstElementChild
 }
+
+export async function sha256(message) {
+  const msgUint8 = new TextEncoder().encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+export function encrypt(key, message) {
+  const messageBytes = aesjs.utils.utf8.toBytes(message)
+  const aesCtr = new aesjs.ModeOfOperation.ctr(key)
+  const cipherBytes = aesCtr.encrypt(messageBytes)
+  return aesjs.utils.hex.fromBytes(cipherBytes)
+}
+
+export function decrypt(key, cipher) {
+  const cipherBytes = aesjs.utils.hex.toBytes(cipher)
+  const aesCtr = new aesjs.ModeOfOperation.ctr(key)
+  const messageBytes = aesCtr.decrypt(cipherBytes)
+  return aesjs.utils.utf8.fromBytes(messageBytes)
+}
+
+export const toBytes = aesjs.utils.hex.toBytes

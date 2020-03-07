@@ -2,6 +2,7 @@ import {html, parseRoutes, partition} from '../js/lib.js'
 import {validate} from '../js/client.js'
 import {computeDebts} from '../js/handlers/balance.js'
 import testAttachRoutes from './testAttachRoutes.js'
+import testCrypto from './testCrypto.js'
 
 export default function () {
   suite('Events validation', testValidate)
@@ -12,6 +13,7 @@ export default function () {
     suite('parsing', testParseRoutes)
     suite('attachement', testAttachRoutes)
   })
+  suite('Crypto', testCrypto)
 
   mocha.run()
 }

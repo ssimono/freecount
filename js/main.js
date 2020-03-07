@@ -1,8 +1,9 @@
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
-import AddExpenseForm from '/js/components/AddExpenseForm.js'
-import InitTripForm from '/js/components/InitTripForm.js'
-import ItemList from '/js/components/ItemList.js'
 import JsonForm from '/js/components/JsonForm.js'
+import InitTripForm from '/js/components/InitTripForm.js'
+import PasswordInputForm from '/js/components/PasswordInputForm.js'
+import AddExpenseForm from '/js/components/AddExpenseForm.js'
+import ItemList from '/js/components/ItemList.js'
 
 import Client, {sync, postCommand, parseAndDispatch} from './client.js'
 
@@ -44,20 +45,25 @@ const routes = [
 
 export default function main() {
   const params = new URLSearchParams(window.location.search)
-  const knownTrips = JSON.parse(localStorage.getItem('known_trips') || '{}')
   const boxId = params.get('box') || generateId(32)
-  const localCommandsKey = `${boxId}_commands`
   const client = new Client(boxId)
 
   customElements.define('item-list', ItemList)
   customElements.define('json-form', JsonForm)
-  customElements.define('add-expense-form', AddExpenseForm)
   customElements.define('init-trip-form', InitTripForm)
+  customElements.define('password-input-form', PasswordInputForm)
+  customElements.define('add-expense-form', AddExpenseForm)
+
+  withStored('known_trips', {}, knownTrips => {
+    const encryptionKey = knownTrips[boxId] && knownTrips[boxId].key
+    if (encryptionKey) {
+      client.setKey(encryptionKey)
+    }
+  })
 
   attachRoutes(routes, document.body)
 
   if (params.has('box')) {
-    goTo('/trip/expenses')
     dispatch(document.body, 'app:sync')
   } else {
     goTo('/setup')
@@ -73,27 +79,48 @@ export default function main() {
       window.location.assign(newUrl.href)
     }],
     ['app:did_init_trip', ({detail}) => {
-      Object.assign(knownTrips, {[detail.name]: boxId})
-      localStorage.setItem('known_trips', JSON.stringify(knownTrips))
       document.title = `${detail.name} | Freecount`
+      goTo('/trip/expenses')
+      persist('known_trips', {}, knownTrips => {
+        const currentValue = knownTrips[boxId] || {}
+        return Object.assign({}, knownTrips, {[boxId]: {...currentValue, title: detail.name}})
+      })
     }],
     ['app:navigate -> [path="/setup"]', ({target, detail}) => {
-      dispatch(target, 'app:knowntrips', knownTrips)
+      withStored('known_trips', {}, dispatch.bind(null, target, 'app:knowntrips'))
+    }],
+    ['app:did_unauthorized', () => {
+      goTo('/password_input')
+    }],
+    ['app:submit_password_input', ({detail, target}) => {
+      client.setKey(detail)
+      dispatch(target, 'app:sync')
+      persist('known_trips', {}, knownTrips => {
+        const currentValue = knownTrips[boxId] || {}
+        return Object.assign({}, knownTrips, {[boxId]: {...currentValue, key: detail}})
+      })
+    }],
+    ['app:encryptionkeyupdate', ({detail}) => {
+      client.setKey(detail)
+      persist('known_trips', {}, knownTrips => {
+        const currentValue = knownTrips[boxId] || {}
+        return Object.assign({}, knownTrips, {[boxId]: {...currentValue, key: detail}})
+      })
     }],
     ['app:posterror', ({target, detail}) => {
-      const localCommands = JSON.parse(localStorage.getItem(localCommandsKey) || '[]')
       const payload = detail.payload
-      localStorage.setItem(localCommandsKey, JSON.stringify([].concat(localCommands, payload)))
+      persist(`${boxId}_commands`, [], commands => [].concat(commands, payload))
       dispatch(target, `app:failed_to_${payload.command}`, payload.data)
     }],
     ['app:sync', ({target, detail}) => {
-      const localCommands = JSON.parse(localStorage.getItem(localCommandsKey) || '[]')
-      if (localCommands.length) {
-        localStorage.setItem(localCommandsKey, '[]')
-        target.addEventListener('app:http_request_stop', () => {
-          localCommands.forEach(c => postCommand(client)({target, detail: c}))
-        }, {once: true})
-      }
+      persist(`${boxId}_commands`, [], commands => {
+        if (commands.length) {
+          target.addEventListener('app:http_request_stop', () => {
+            commands.forEach(c => postCommand(client)({target, detail: c}))
+          }, {once: true})
+        }
+        return []
+      })
     }]
   ], document.body)
 
@@ -122,4 +149,31 @@ function registerSW(client) {
   navigator.serviceWorker.addEventListener('message', event => {
     parseAndDispatch(client, document.body, event.data) && client.offset++
   })
+}
+
+function withStored(storageKey, default_, fn) {
+  if (localStorage.hasOwnProperty(storageKey)) {
+    fn(backport(storageKey, JSON.parse(localStorage.getItem(storageKey))))
+  } else {
+    fn(default_)
+  }
+}
+
+function persist(storageKey, default_, fn) {
+  withStored(storageKey, default_, item => {
+    localStorage.setItem(storageKey, (JSON.stringify(fn(item))))
+  })
+}
+
+// Turn old stored format into a new one
+function backport(key, item) {
+  switch(key) {
+    case 'known_trips':
+      return Object.getOwnPropertyNames(item)
+        .map(k => [k, item[k]])
+        .map(([k, v]) => typeof v === 'string' ? [v, { title: k }] : [k, v])
+        .reduce((map, [k, v]) => Object.assign(map, {[k]: v}), {})
+    default:
+      return item
+  }
 }

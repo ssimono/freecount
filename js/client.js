@@ -1,7 +1,9 @@
-import {dispatch} from './lib.js'
+import {decrypt, dispatch, encrypt, toBytes} from './lib.js'
 
 const COMMAND_VERSION = 1
 const CHUNK_SIZE = 100
+
+const identity = x => x
 
 export default class JsonBoxClient {
   constructor(boxId, endpoint = 'https://jsonbox.io') {
@@ -10,37 +12,53 @@ export default class JsonBoxClient {
     this.offset = 0
   }
 
+  setKey(hexKey) {
+    this.key = hexKey ? toBytes(hexKey) : null
+  }
+
   async getAllRemoteEvents() {
     const events = []
     let newEvents = []
     do {
-      newEvents = await this.getRemoteEvents()
-      events.push(...newEvents)
+      newEvents = await fetchEventChunk(this.endpoint, this.boxId, this.offset)
+
+      if (this.offset === 0 && newEvents.length && !this.key) {
+        // infering whether the content is encrypted or not
+        const firstEvent = newEvents[0]
+        if (firstEvent.hasOwnProperty('cipher')) {
+          return [ { ...firstEvent, command: 'unauthorized', version: COMMAND_VERSION, data: {} } ]
+        }
+      }
+
+      const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
+
+      events.push(...newEvents.map(decryptFn))
+      this.offset += newEvents.length
     } while(newEvents.length >= CHUNK_SIZE);
-
-    return events
-  }
-
-  async getRemoteEvents() {
-    const events = await http(
-      `${this.endpoint}/${this.boxId}?sort=_createdOn&limit=${CHUNK_SIZE}&skip=${this.offset}`,
-      null
-    )
-
-    this.offset += events.length
 
     return events
   }
 
   async postCommand (command) {
     const url = `${this.endpoint}/${this.boxId}`
+    const encryptFn = this.key ? encryptMessage.bind(null, this.key) : identity
+    const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
 
     return await http(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({...command, version: COMMAND_VERSION})
-    })
+      body: JSON.stringify(encryptFn({...command, version: COMMAND_VERSION}))
+    }).then(decryptFn)
   }
+}
+
+class ForbiddenError extends Error {}
+
+async function fetchEventChunk(endpoint, boxId, offset) {
+  return await http(
+    `${endpoint}/${boxId}?sort=_createdOn&limit=${CHUNK_SIZE}&skip=${offset}`,
+    null
+  )
 }
 
 export function sync(client) {
@@ -49,7 +67,11 @@ export function sync(client) {
     client.getAllRemoteEvents().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))
     ).catch(err => {
-      dispatch(target, 'app:syncerror', err.message)
+      if (err instanceof ForbiddenError) {
+        dispatch(target, 'app:forbidden', err.message)
+      } else {
+        dispatch(target, 'app:syncerror', err.message)
+      }
     }).finally(() => dispatch(target, 'app:http_request_stop'))
   }
 }
@@ -96,6 +118,20 @@ async function http(url, req) {
   }
 }
 
+function decryptMessage(key, message) {
+  try {
+    const payload = JSON.parse(decrypt(key, message.cipher))
+    return Object.assign({...message, ...payload}, {cipher: undefined})
+  } catch(e) {
+    throw new ForbiddenError('Invalid password')
+  }
+}
+
+function encryptMessage(key, message) {
+  const payload = JSON.stringify(message)
+  return { cipher: encrypt(key, payload) }
+}
+
 export function validate(payload) {
   const assert = function(predicate, message = '') {
     if (!predicate) throw new Error(`Invalid command: ${JSON.stringify(payload)}: ${message}`)
@@ -110,7 +146,10 @@ export function validate(payload) {
 
   assertHas(payload, 'command', 'version', 'data', '_createdOn')
   assert(payload.version === COMMAND_VERSION, 'invalid or unsupported version')
-  assert(['init_trip', 'add_expense'].indexOf(payload.command) !== -1, `unknown command ${payload.command}`)
+  assert(
+    ['init_trip', 'add_expense', 'unauthorized'].indexOf(payload.command) !== -1,
+    `unknown command ${payload.command}`
+  )
 
   const {command, data} = payload
 

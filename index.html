@@ -46,6 +46,14 @@
         </template>
         <button type="button" class="add">+</button>
       </item-list>
+
+      <div class="toggle">
+        <label for="init_trip_password_toggle">Protect by password</label>
+        <input type="checkbox" id="init_trip_password_toggle" />
+      </div>
+
+      <div class="errors"></div>
+
       <input type="submit" name="submit" value="Go!"/>
     </json-form>
 
@@ -57,6 +65,16 @@
       <span>&nbsp;</span>
       <a href="https://github.com/ssimono/freecount" title="Freecount's source code">About</a>
     </footer>
+  </section>
+
+  <section path="/password_input">
+    <password-input-form name="password_input">
+      <h3>This freecount is password protected</h3>
+      <label for="password_input_password">Password</label>
+      <input type="password" id="password_input_password" name="password" required />
+      <input type="submit" value="Open the freecount" />
+      <div class="errors"></div>
+    </password-input-form>
   </section>
 
   <main path="/trip">
