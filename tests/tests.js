@@ -65,6 +65,7 @@ function testValidate() {
     assert.throws(() => validate({command: "init_trip", version: 4}))
     assert.throws(() => validate({command: "init_trip", _createdOn:"2019", data: null}))
     assert.throws(() => validate({command: "init_trip", _createdOn:"2019", data: {name: '', currency: 'chf', members: []}}))
+    assert.throws(() => validate({_id:"5dfff89989e555001711a344",command:"add_expense",data:{title:"Hello",amount:"543,7",creditor:"Chuck",participants:["Chuck","Bruce"],date:"2019-12-22",currency:"EUR"},version:1,_createdOn:"2019-12-22T23:13:29.784Z"}))
   })
 }
 

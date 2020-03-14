@@ -123,6 +123,7 @@ export function validate(payload) {
       break;
     case 'add_expense':
       assertHas(data, 'creditor', 'participants', 'amount', 'date')
+      assert(!Number.isNaN(Number(data.amount)))
       assert((new Date(data.date)) instanceof Date, `invalid date: ${data.date}`)
       break;
   }
