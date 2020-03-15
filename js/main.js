@@ -1,4 +1,5 @@
 import {attachRoutes, dispatch, generateId, goTo} from './lib.js'
+import AddExpenseForm from '/js/components/AddExpenseForm.js'
 import JsonForm from '/js/components/JsonForm.js'
 import InputList from '/js/components/InputList.js'
 
@@ -47,8 +48,9 @@ export default function main() {
   const localCommandsKey = `${boxId}_commands`
   const client = new Client(boxId)
 
-  customElements.define('json-form', JsonForm)
   customElements.define('input-list', InputList)
+  customElements.define('json-form', JsonForm)
+  customElements.define('add-expense-form', AddExpenseForm)
 
   attachRoutes(routes, document.body)
 

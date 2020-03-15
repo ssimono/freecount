@@ -88,7 +88,7 @@
 
   <section path="/add_expense">
     <h2>Add an expense</h2>
-    <json-form class="add-expense" name="add_expense">
+    <add-expense-form class="add-expense" name="add_expense">
       <label for="add_expense_title">Title</label>
       <input type="text" id="add_expense_title" name="title" autocomplete="off" required/>
 
@@ -109,9 +109,11 @@
       <input type="date" id="add_expense_date" name="date" required/>
       <input type="hidden" name="currency" value="EUR" />
 
+      <p class="errors"></p>
+
       <input type="submit" name="submit" value="Add" />
       <button type="button" title="Cancel" to="/trip/expenses" class="cancel">Cancel</button>
-    </json-form>
+    </add-expense-form>
   </section>
 
   <script type="module">
