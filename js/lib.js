@@ -158,7 +158,7 @@ export function html(parts, ...args) {
       if (arg instanceof Element) {
         node.replaceWith(arg)
         replaced++
-      } else if (arg instanceof Array) {
+      } else if (arg instanceof Array || arg instanceof HTMLCollection) {
         const parent = node.parentElement
         for(let child of arg) {
           if (!child instanceof Element) {

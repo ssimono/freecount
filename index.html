@@ -33,18 +33,19 @@
 
   <section path="/setup">
     <h2>Let's start a trip</h2>
-    <json-form name="init_trip" class="init-trip">
+    <init-trip-form name="init_trip" class="init-trip">
       <label for="init_trip_name">Trip name</label>
       <input type="text" id="init_trip_name" name="name" autocomplete="off" required/>
 
       <input type="hidden" name="currency" value="EUR" readonly/>
 
       <label>Who's joining?</label>
-      <input-list class="list-group" min-items="2" add-label="Who else?">
-          <template>
-            <input type="text" name="members[]" placeholder="Put a name here" minlength="1" required/>
-          </template>
-      </input-list>
+      <item-list init-items="2" class="members minimum-count">
+        <template>
+          <input type="text" name="members[]" placeholder="Put a name here" minlength="1" required/>
+        </template>
+        <button type="button" class="add">+</button>
+      </item-list>
       <input type="submit" name="submit" value="Go!"/>
     </json-form>
 

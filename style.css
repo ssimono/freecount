@@ -251,6 +251,13 @@ footer button {
   content: ''
 }
 
+/* ===== Init trip form */
+
+.init-trip .item input {
+  margin-bottom: 0;
+  width: 100%;
+}
+
 /* ===== Helpers */
 
 a.nav {
@@ -282,35 +289,31 @@ a.nav {
   padding: 0.5rem;
 }
 
-.list-group {
+item-list {
   display: grid;
   grid-column-gap: 4px;
   grid-row-gap: 4px;
   grid-template-columns: 1fr auto;
 }
 
-.list-group input {
+item-list .item {
   grid-column: 1 /1;
   margin-bottom: 0;
 }
 
-.list-group input.permanent {
-  grid-column: 1 / span 2;
-}
-
-.list-group .add {
+item-list .add {
   grid-column: 1 / span 1;
   margin-bottom: 1rem;
 }
 
-.list-group .remove {
+item-list .remove {
   background-color: var(--tertiary);
   grid-column: 2 /2;
   margin: 5px;
   width: calc(0.8 * var(--height));
 }
 
-.list-group .remove:disabled {
+item-list.minimum-count .remove {
   display: none;
 }
 

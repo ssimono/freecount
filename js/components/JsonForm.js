@@ -1,20 +1,17 @@
 import {dispatch, html} from '../lib.js'
 
 export default class JsonForm extends HTMLElement {
-  constructor() {
-    super()
-    // Use a nested form element to circumvent lack of customized built-in elements in Safari
+  connectedCallback() {
+    // Use a nested form element to circumvent the lack of customized built-in elements in Safari
     const form = html`<form data-name="${this.getAttribute('name')}">`
 
+    form.innerHTML = this.innerHTML
     while(this.firstChild) {
-      form.appendChild(this.firstChild.cloneNode(true))
       this.removeChild(this.firstChild)
     }
 
     this.appendChild(form)
-  }
 
-  connectedCallback() {
     this.addEventListener('submit', submitHandler(
       this.validate.bind(this),
       this.format.bind(this),
