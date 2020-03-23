@@ -1,7 +1,7 @@
-import {dispatch, goTo, html} from '../lib.js'
-import {pretty} from './utils.js'
+import { dispatch, goTo, html } from '../lib.js'
+import { pretty } from './utils.js'
 
-export function onTripReady({target, detail}) {
+export function onTripReady ({ target, detail }) {
   document.querySelector('h1').innerText = detail.name
   document.getElementById('expense_list').classList.add('ready')
 
@@ -21,39 +21,39 @@ export function onTripReady({target, detail}) {
   })
 }
 
-export function onRefreshButtonClicked(event) {
+export function onRefreshButtonClicked (event) {
   event.preventDefault()
   dispatch(event.target, 'app:sync')
 }
 
-export function onNewExpense({detail}) {
+export function onNewExpense ({ detail }) {
   document.getElementById('expense_list').prepend(expenseItem(detail))
 }
 
-export function onImmediateNewExpense({detail}) {
+export function onImmediateNewExpense ({ detail }) {
   const newItem = expenseItem(detail)
   newItem.classList.add('immediate')
   document.getElementById('expense_list').prepend(newItem)
 }
 
-export function onLocalNewExpense({detail}) {
+export function onLocalNewExpense ({ detail }) {
   const newItem = expenseItem(detail)
   newItem.classList.add('local')
   document.getElementById('expense_list').prepend(newItem)
 }
 
-export function clearLocal() {
+export function clearLocal () {
   const localExpenses = document.querySelectorAll('#expense_list .local')
   if (!localExpenses) {
     return
   }
 
-  for(let local of localExpenses) {
+  for (const local of localExpenses) {
     local.parentNode.removeChild(local)
   }
 }
 
-export function onAddExpenseFormOpen({target}) {
+export function onAddExpenseFormOpen ({ target }) {
   const titleInput = target.querySelector('form [name="title"]')
   const dateInput = target.querySelector('form [name="date"]')
 
@@ -66,19 +66,19 @@ export function onAddExpenseFormOpen({target}) {
   }
 }
 
-export function initTrip({target, detail}) {
+export function initTrip ({ target, detail }) {
   dispatch(target, 'app:postcommand', { command: 'init_trip', data: detail })
 }
 
-export function addExpense({target, detail}) {
+export function addExpense ({ target, detail }) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
   target.addEventListener('app:http_request_stop', () => {
     dispatch(target, 'app:sync')
     goTo('/trip/expenses')
-  }, { once:true })
+  }, { once: true })
 }
 
-export function toggleRefreshButton() {
+export function toggleRefreshButton () {
   // Hide the explicit refresh if the touch events are enabled
   if (navigator.maxTouchPoints > 0) {
     const button = document.getElementById('refresh_button')

@@ -1,22 +1,22 @@
-import {html} from '../lib.js'
+import { html } from '../lib.js'
 
 export default class ItemList extends HTMLElement {
-  connectedCallback() {
+  connectedCallback () {
     this.addEventListener('click', clickHandler)
 
     const currentCount = this.querySelectorAll('.item').length
     const desiredCount = this.getIntAttribute('init-items')
 
-    for(let i = currentCount ; i < desiredCount ; ++i) {
+    for (let i = currentCount; i < desiredCount; ++i) {
       this.addItem()
     }
   }
 
-  getIntAttribute(name) {
+  getIntAttribute (name) {
     return parseInt(super.getAttribute(name) || '0')
   }
 
-  addItem() {
+  addItem () {
     const addButton = this.querySelector('.add')
     const template = this.querySelector('template')
     const itemContent = template
@@ -29,10 +29,9 @@ export default class ItemList extends HTMLElement {
     this.insertBefore(newItem, addButton)
     this.insertBefore(removeButton, addButton)
   }
-
 }
 
-function clickHandler({target, currentTarget}) {
+function clickHandler ({ target, currentTarget }) {
   let itemCount = currentTarget.querySelectorAll('.item').length
 
   if (target.classList.contains('add')) {
@@ -44,5 +43,5 @@ function clickHandler({target, currentTarget}) {
     itemCount--
   }
 
-  currentTarget.dispatchEvent(new CustomEvent('item-list:update', {detail: itemCount}))
+  currentTarget.dispatchEvent(new CustomEvent('item-list:update', { detail: itemCount }))
 }

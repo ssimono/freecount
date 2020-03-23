@@ -1,10 +1,10 @@
 // Increment this to simulate a new version of the worker even if the code didn't change.
 // This will allow cache clearing and clients refresh
-const deploy_key = 16
+const deploy_key = 16 // eslint-disable-line
 const cache_key = 'main'
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.delete(cache_key))
+  event.waitUntil(caches.delete(cacheKey))
   console.info('Service Worker install')
 })
 
@@ -25,9 +25,9 @@ self.addEventListener('fetch', event => {
   }))
 })
 
-async function fetchAndCache(request) {
+async function fetchAndCache (request) {
   const response = await fetch(request)
-  const cache = await caches.open(cache_key)
+  const cache = await caches.open(cacheKey)
 
   cache.put(request, response.clone()).then(() => {
     console.debug(`Cached request: ${request.method} ${request.url}`)
@@ -36,40 +36,40 @@ async function fetchAndCache(request) {
   return response
 }
 
-async function cacheFirst(request) {
+async function cacheFirst (request) {
   const cached = await caches.match(request)
-  return cached || await fetchAndCache(request)
+  return cached || fetchAndCache(request)
 }
 
-async function fetchEvents({request, clientId}) {
+async function fetchEvents ({ request, clientId }) {
   const cached = await caches.match(request)
 
   if (cached) {
     // Asynchronously check for more data
     checkAndRefresh(request.clone(), cached.clone(), clientId)
   } else {
-    return await fetchAndCache(request, cached, clientId)
+    return fetchAndCache(request, cached, clientId)
   }
 
   return cached
 }
 
-async function checkAndRefresh(request, cached, clientId) {
+async function checkAndRefresh (request, cached, clientId) {
   const cachedEvents = await cached.json()
   const response = await fetch(request)
   const freshEvents = await response.clone().json()
 
-  if(freshEvents.length === cachedEvents.length) {
+  if (freshEvents.length === cachedEvents.length) {
     return
   }
 
-  const cache = await caches.open(cache_key)
+  const cache = await caches.open(cacheKey)
   await cache.put(request, response)
   const client = await clients.get(clientId)
 
   if (client) {
     const newEvents = freshEvents.slice(cachedEvents.length)
-    for (let evt of newEvents) {
+    for (const evt of newEvents) {
       client.postMessage(evt)
     }
   }

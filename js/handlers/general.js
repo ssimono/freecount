@@ -1,10 +1,10 @@
-import {dispatch, html} from '../lib.js'
+import { dispatch } from '../lib.js'
 
 /**
  * Binds temporary listener on touch events to re-trigger
  * higher-level pull events
  */
-export function checkPull({target, targetTouches, timeStamp}) {
+export function checkPull ({ target, targetTouches, timeStamp }) {
   if (!targetTouches.length) {
     return
   }
@@ -29,14 +29,13 @@ export function checkPull({target, targetTouches, timeStamp}) {
         dispatch(event.target, 'app:pulldown')
       }
     }
-  }, {once: true})
-
+  }, { once: true })
 }
 
 /**
  * Toggle "active" class on menu items as they get selected
  */
-export function updateMenu({target, currentTarget}) {
+export function updateMenu ({ target, currentTarget }) {
   const activeItem = currentTarget.querySelector('[to].active')
 
   if (target === activeItem) {

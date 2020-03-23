@@ -1,6 +1,6 @@
-import {html} from '../lib.js'
+import { html } from '../lib.js'
 
-export function showKnownTrips({target, detail}) {
+export function showKnownTrips ({ target, detail }) {
   const boxIds = Object.getOwnPropertyNames(detail)
   if (!boxIds.length) {
     return
@@ -12,5 +12,5 @@ export function showKnownTrips({target, detail}) {
   })
 
   paragraph.querySelector('ul').append(...items)
-  paragraph.style.setProperty("display", 'block')
+  paragraph.style.setProperty('display', 'block')
 }

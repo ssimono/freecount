@@ -1,4 +1,4 @@
-import {decrypt, dispatch, encrypt, toBytes} from './lib.js'
+import { decrypt, dispatch, encrypt, toBytes } from './lib.js'
 
 const COMMAND_VERSION = 1
 const CHUNK_SIZE = 100
@@ -6,17 +6,17 @@ const CHUNK_SIZE = 100
 const identity = x => x
 
 export default class JsonBoxClient {
-  constructor(boxId, endpoint = 'https://jsonbox.io') {
+  constructor (boxId, endpoint = 'https://jsonbox.io') {
     this.boxId = boxId
     this.endpoint = endpoint
     this.offset = 0
   }
 
-  setKey(hexKey) {
+  setKey (hexKey) {
     this.key = hexKey ? toBytes(hexKey) : null
   }
 
-  async getAllRemoteEvents() {
+  async getAllRemoteEvents () {
     const events = []
     let newEvents = []
     do {
@@ -25,8 +25,8 @@ export default class JsonBoxClient {
       if (this.offset === 0 && newEvents.length && !this.key) {
         // infering whether the content is encrypted or not
         const firstEvent = newEvents[0]
-        if (firstEvent.hasOwnProperty('cipher')) {
-          return [ { ...firstEvent, command: 'unauthorized', version: COMMAND_VERSION, data: {} } ]
+        if ('cipher' in firstEvent) {
+          return [{ ...firstEvent, command: 'unauthorized', version: COMMAND_VERSION, data: {} }]
         }
       }
 
@@ -34,7 +34,7 @@ export default class JsonBoxClient {
 
       events.push(...newEvents.map(decryptFn))
       this.offset += newEvents.length
-    } while(newEvents.length >= CHUNK_SIZE);
+    } while (newEvents.length >= CHUNK_SIZE)
 
     return events
   }
@@ -44,25 +44,25 @@ export default class JsonBoxClient {
     const encryptFn = this.key ? encryptMessage.bind(null, this.key) : identity
     const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
 
-    return await http(url, {
+    return http(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(encryptFn({...command, version: COMMAND_VERSION}))
+      body: JSON.stringify(encryptFn({ ...command, version: COMMAND_VERSION }))
     }).then(decryptFn)
   }
 }
 
 class ForbiddenError extends Error {}
 
-async function fetchEventChunk(endpoint, boxId, offset) {
-  return await http(
+async function fetchEventChunk (endpoint, boxId, offset) {
+  return http(
     `${endpoint}/${boxId}?sort=_createdOn&limit=${CHUNK_SIZE}&skip=${offset}`,
     null
   )
 }
 
-export function sync(client) {
-  return ({target}) => {
+export function sync (client) {
+  return ({ target }) => {
     dispatch(target, 'app:http_request_start')
     client.getAllRemoteEvents().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))
@@ -76,9 +76,9 @@ export function sync(client) {
   }
 }
 
-export function parseAndDispatch(client, target, payload) {
+export function parseAndDispatch (client, target, payload) {
   try {
-    const {command, data} = validate(payload)
+    const { command, data } = validate(payload)
     dispatch(target, `app:did_${command}`, data)
     return true
   } catch (e) {
@@ -87,15 +87,15 @@ export function parseAndDispatch(client, target, payload) {
   }
 }
 
-export function postCommand(client) {
-  return ({target, detail}) => {
+export function postCommand (client) {
+  return ({ target, detail }) => {
     dispatch(target, 'app:http_request_start')
     client.postCommand(detail).then(body => {
-      const {command, data} = validate(body)
+      const { command, data } = validate(body)
       dispatch(target, `app:just_did_${command}`, data)
     }).catch(err => {
-      if(err.message.indexOf('NetworkError') !== -1) {
-        dispatch(target, 'app:posterror', {err, payload: detail})
+      if (err.message.indexOf('NetworkError') !== -1) {
+        dispatch(target, 'app:posterror', { err, payload: detail })
       } else {
         dispatch(target, 'app:syncerror', err.message)
       }
@@ -103,43 +103,43 @@ export function postCommand(client) {
   }
 }
 
-async function http(url, req) {
+async function http (url, req) {
   const response = await fetch(url, req)
   const status = response.status
 
   if (status >= 200 && status < 400) {
-    return await response.json()
+    return response.json()
   } else if (status >= 400 && status < 500) {
     const json = await response.json()
     throw new Error(`Got error ${status}: ${json.message}`)
   } else {
-    throw new Error(`Got error ${status}`)
     console.error(response)
+    throw new Error(`Got error ${status}`)
   }
 }
 
-function decryptMessage(key, message) {
+function decryptMessage (key, message) {
   try {
     const payload = JSON.parse(decrypt(key, message.cipher))
-    return Object.assign({...message, ...payload}, {cipher: undefined})
-  } catch(e) {
+    return Object.assign({ ...message, ...payload }, { cipher: undefined })
+  } catch (e) {
     throw new ForbiddenError('Invalid password')
   }
 }
 
-function encryptMessage(key, message) {
+function encryptMessage (key, message) {
   const payload = JSON.stringify(message)
   return { cipher: encrypt(key, payload) }
 }
 
-export function validate(payload) {
-  const assert = function(predicate, message = '') {
+export function validate (payload) {
+  const assert = function (predicate, message = '') {
     if (!predicate) throw new Error(`Invalid command: ${JSON.stringify(payload)}: ${message}`)
   }
 
   const assertHas = function (obj, ...props) {
     const current = Object.getOwnPropertyNames(obj)
-    for(let prop of props) {
+    for (const prop of props) {
       assert(current.indexOf(prop) >= 0, `Missing property: ${prop}`)
     }
   }
@@ -151,21 +151,21 @@ export function validate(payload) {
     `unknown command ${payload.command}`
   )
 
-  const {command, data} = payload
+  const { command, data } = payload
 
-  switch(command) {
+  switch (command) {
     case 'init_trip':
       assertHas(data, 'members', 'name', 'currency')
       assert(data.members.length, 'missing members')
       assert(data.name.length, 'invalid name')
       assert(data.currency.length === 3, 'invalid currency')
-      break;
+      break
     case 'add_expense':
       assertHas(data, 'creditor', 'participants', 'amount', 'date')
       assert(!Number.isNaN(Number(data.amount)))
       assert((new Date(data.date)) instanceof Date, `invalid date: ${data.date}`)
-      break;
+      break
   }
 
-  return {command, data}
+  return { command, data }
 }

@@ -1,6 +1,6 @@
 import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
 
-export function dispatch(target, name, payload) {
+export function dispatch (target, name, payload) {
   if (payload instanceof Promise) {
     payload.then(load => dispatch(target, name, load)).catch(console.error)
     return
@@ -10,7 +10,7 @@ export function dispatch(target, name, payload) {
   setTimeout(() => target.dispatchEvent(event), 0)
 }
 
-export function parseRoutes(strRoutes) {
+export function parseRoutes (strRoutes) {
   return strRoutes
     .map(([def, handler]) => [def.split(/(=>|->)/).filter(Boolean), handler, def])
     .map(([tokens, handler, strRoute]) => {
@@ -20,11 +20,11 @@ export function parseRoutes(strRoutes) {
       }
 
       const shift = tokens => tokens.shift().trim()
-      const route = {eventType: shift(tokens), selector: null, delegatedSelector: null, handler}
+      const route = { eventType: shift(tokens), selector: null, delegatedSelector: null, handler }
 
-      while(tokens.length) {
+      while (tokens.length) {
         const token = shift(tokens)
-        switch(token.trim()) {
+        switch (token.trim()) {
           case '=>':
             route.selector = shift(tokens)
             break
@@ -42,38 +42,38 @@ export function parseRoutes(strRoutes) {
     .filter(Boolean)
 }
 
-export function attachRoutes(strRoutes, root) {
+export function attachRoutes (strRoutes, root) {
   const routes = parseRoutes(strRoutes)
 
-  for (let [eventType, eventRoutes] of partition('eventType', routes)) {
-    for(let [selector, selectorRoutes] of partition('selector', eventRoutes)) {
+  for (const [eventType, eventRoutes] of partition('eventType', routes)) {
+    for (const [selector, selectorRoutes] of partition('selector', eventRoutes)) {
       const targets = selector === null
         ? [root]
         : root.querySelectorAll(selector)
 
       // Attach direct handlers
       selectorRoutes
-      .filter(({delegatedSelector}) => delegatedSelector === null)
-      .forEach(({handler}) => {
-        for(let element of targets) {
-          element.addEventListener(eventType, handler)
-        }
-      })
+        .filter(({ delegatedSelector }) => delegatedSelector === null)
+        .forEach(({ handler }) => {
+          for (const element of targets) {
+            element.addEventListener(eventType, handler)
+          }
+        })
 
       // Attach delegated handlers
 
       const delegatedRoutes = selectorRoutes
-        .filter(({delegatedSelector}) => delegatedSelector !== null)
+        .filter(({ delegatedSelector }) => delegatedSelector !== null)
 
       const combinedHandler = routes => event => {
-        for (let {delegatedSelector, handler} of routes) {
-          if(event.target.matches(delegatedSelector)) {
+        for (const { delegatedSelector, handler } of routes) {
+          if (event.target.matches(delegatedSelector)) {
             handler(event)
           }
         }
       }
 
-      for(let element of targets) {
+      for (const element of targets) {
         element.addEventListener(eventType, combinedHandler(delegatedRoutes))
       }
     }
@@ -89,9 +89,9 @@ export function generateId (len) {
   return Array.from(arr, dec2hex).join('')
 }
 
-export function goTo(newPath) {
+export function goTo (newPath) {
   const toShow = []
-  for(
+  for (
     let page = document.querySelector(`[path="${newPath}"]`);
     page !== null;
     page = page.parentElement.closest('[path]')
@@ -99,13 +99,13 @@ export function goTo(newPath) {
 
   const toKeep = new Set(toShow.map(p => p.getAttribute('path')))
 
-  for(let toHide of document.querySelectorAll('[path].active')) {
+  for (const toHide of document.querySelectorAll('[path].active')) {
     if (!toKeep.has(toHide.getAttribute('path'))) {
       toHide.classList.remove('active')
     }
   }
 
-  for (let page of toShow) {
+  for (const page of toShow) {
     page.classList.add('active')
   }
 
@@ -115,13 +115,13 @@ export function goTo(newPath) {
   }
 }
 
-export function partition(predicate, values) {
+export function partition (predicate, values) {
   const pred = typeof predicate === 'string'
     ? v => v[predicate]
     : predicate
 
   const map = new Map()
-  for(let v of values) {
+  for (const v of values) {
     const key = pred(v)
     if (map.has(key)) {
       map.get(key).push(v)
@@ -133,7 +133,7 @@ export function partition(predicate, values) {
   return map
 }
 
-export function html(parts, ...args) {
+export function html (parts, ...args) {
   const randomPrefix = generateId(8)
   const placeholder = n => `<!--${randomPrefix} ${n}-->`
   const container = document.createElement('div')
@@ -148,12 +148,12 @@ export function html(parts, ...args) {
   }
 
   let replaced = 0
-  const commentType = NodeFilter.SHOW_COMMENT|NodeFilter.SHOW_CDATA_SECTION,
-        elementType = NodeFilter.SHOW_ELEMENT,
-        nodes = document.createNodeIterator(container, commentType|elementType),
-        placeholderPattern = new RegExp(`<!--${randomPrefix} (\\d)-->`)
+  const commentType = NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_CDATA_SECTION
+  const elementType = NodeFilter.SHOW_ELEMENT
+  const nodes = document.createNodeIterator(container, commentType | elementType)
+  const placeholderPattern = new RegExp(`<!--${randomPrefix} (\\d)-->`)
 
-  for(let node = nodes.nextNode() ; node !== null ; node = nodes.nextNode()) {
+  for (let node = nodes.nextNode(); node !== null; node = nodes.nextNode()) {
     if (node.nodeType & commentType) {
       const [prefix, idx] = node.nodeValue.split(' ')
       if (prefix !== randomPrefix) {
@@ -167,8 +167,8 @@ export function html(parts, ...args) {
         replaced++
       } else if (arg instanceof Array || arg instanceof HTMLCollection) {
         const parent = node.parentElement
-        for(let child of arg) {
-          if (!child instanceof Element) {
+        for (const child of arg) {
+          if (!(child instanceof Element)) {
             throw new Error(`Dynamic array placeholder contains non DOM Element: ${child}`)
           }
           parent.insertBefore(child, node)
@@ -180,7 +180,7 @@ export function html(parts, ...args) {
         replaced++
       }
     } else if ((node.nodeType & elementType) && node.attributes.length) {
-      for(let attr of Array.from(node.attributes)) {
+      for (const attr of Array.from(node.attributes)) {
         const sanitized = attr.value.replace(
           placeholderPattern,
           (match, idx) => `${args[idx]}`
@@ -201,7 +201,7 @@ export function html(parts, ...args) {
   return container.firstElementChild
 }
 
-export async function sha256(message) {
+export async function sha256 (message) {
   const msgUint8 = new TextEncoder().encode(message)
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
   return Array.from(new Uint8Array(hashBuffer))
@@ -209,15 +209,17 @@ export async function sha256(message) {
     .join('')
 }
 
-export function encrypt(key, message) {
+export function encrypt (key, message) {
   const messageBytes = aesjs.utils.utf8.toBytes(message)
+  // eslint-disable-next-line new-cap
   const aesCtr = new aesjs.ModeOfOperation.ctr(key)
   const cipherBytes = aesCtr.encrypt(messageBytes)
   return aesjs.utils.hex.fromBytes(cipherBytes)
 }
 
-export function decrypt(key, cipher) {
+export function decrypt (key, cipher) {
   const cipherBytes = aesjs.utils.hex.toBytes(cipher)
+  // eslint-disable-next-line new-cap
   const aesCtr = new aesjs.ModeOfOperation.ctr(key)
   const messageBytes = aesCtr.decrypt(cipherBytes)
   return aesjs.utils.utf8.fromBytes(messageBytes)

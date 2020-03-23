@@ -1,30 +1,30 @@
 import JsonForm from './JsonForm.js'
-import {dispatch, html, sha256} from '../lib.js'
+import { dispatch, html, sha256 } from '../lib.js'
 
 const MIN_MEMBERS = 2
 
 export default class InitTripForm extends JsonForm {
-  connectedCallback() {
+  connectedCallback () {
     super.connectedCallback()
     this.querySelector('.members').addEventListener('item-list:update', onMembersUpdate)
     this.querySelector('#init_trip_password_toggle').addEventListener('change', onPasswordToggle)
   }
 
-  validate(initTrip) {
+  validate (initTrip) {
     const uniqueMembers = new Set(initTrip.members)
     if (uniqueMembers.size !== initTrip.members.length) {
-      return [{error: 'It looks like some people have the same name, please adjust'}]
+      return [{ error: 'It looks like some people have the same name, please adjust' }]
     }
 
     return []
   }
 }
 
-function onMembersUpdate({target, detail}) {
+function onMembersUpdate ({ target, detail }) {
   target.classList.toggle('minimum-count', detail <= MIN_MEMBERS)
 }
 
-function onPasswordToggle({target}) {
+function onPasswordToggle ({ target }) {
   const form = target.form
   const passwordSection = form.querySelector('.password-control')
 
@@ -46,6 +46,6 @@ function onPasswordToggle({target}) {
   }
 }
 
-function onPasswordChange(event) {
+function onPasswordChange (event) {
   dispatch(event.target, 'app:encryptionkeyupdate', sha256(event.target.value))
 }

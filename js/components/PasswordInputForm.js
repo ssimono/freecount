@@ -1,17 +1,17 @@
-import {sha256} from '../lib.js'
+import { sha256 } from '../lib.js'
 import JsonForm from './JsonForm.js'
 
 export default class PasswordForm extends JsonForm {
-  connectedCallback() {
+  connectedCallback () {
     super.connectedCallback()
     this.addEventListener('app:forbidden', onForbidden)
   }
 
-  format(passwordInput) {
+  format (passwordInput) {
     return sha256(passwordInput.password)
   }
 }
 
-function onForbidden({detail}) {
-  JsonForm.showErrors(this._form, [{'error': detail}])
+function onForbidden ({ detail }) {
+  JsonForm.showErrors(this._form, [{ error: detail }])
 }
