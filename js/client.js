@@ -1,4 +1,4 @@
-import { decrypt, dispatch, encrypt, toBytes } from './lib.js'
+import { decrypt, dispatch, encrypt, fromBytes, toBytes } from './lib.js'
 
 const COMMAND_VERSION = 1
 const CHUNK_SIZE = 100
@@ -10,6 +10,10 @@ export default class JsonBoxClient {
     this.boxId = boxId
     this.endpoint = endpoint
     this.offset = 0
+  }
+
+  getKey () {
+    return this.key ? fromBytes(this.key) : null
   }
 
   setKey (hexKey) {

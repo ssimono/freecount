@@ -83,7 +83,11 @@ export default function main () {
       goTo('/trip/expenses')
       persist('known_trips', {}, knownTrips => {
         const currentValue = knownTrips[boxId] || {}
-        return Object.assign({}, knownTrips, { [boxId]: { ...currentValue, title: detail.name } })
+        return Object.assign(
+          {},
+          knownTrips,
+          { [boxId]: { ...currentValue, title: detail.name, key: client.getKey() } }
+        )
       })
     }],
     ['app:navigate -> [path="/setup"]', ({ target, detail }) => {
@@ -95,10 +99,6 @@ export default function main () {
     ['app:submit_password_input', ({ detail, target }) => {
       client.setKey(detail)
       dispatch(target, 'app:sync')
-      persist('known_trips', {}, knownTrips => {
-        const currentValue = knownTrips[boxId] || {}
-        return Object.assign({}, knownTrips, { [boxId]: { ...currentValue, key: detail } })
-      })
     }],
     ['app:encryptionkeyupdate', ({ detail }) => {
       client.setKey(detail)

@@ -1,4 +1,9 @@
 import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
+import fastSha from 'https://dev.jspm.io/npm:fast-sha256@1.3.0/sha256.min.js'
+
+// Do not change this, unless you are self-hosting Freecount and do not want the
+// data to be readable from another "instance"
+const SALT = '3dca5d3ce9ce8aa0a47b390960c76625'
 
 export function dispatch (target, name, payload) {
   if (payload instanceof Promise) {
@@ -201,12 +206,13 @@ export function html (parts, ...args) {
   return container.firstElementChild
 }
 
-export async function sha256 (message) {
-  const msgUint8 = new TextEncoder().encode(message)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+export function deriveKey (password) {
+  const toBytes = m => aesjs.utils.utf8.toBytes(m)
+
+  return aesjs.utils.hex.fromBytes(fastSha.pbkdf2(
+    toBytes(password),
+    toBytes(SALT),
+    1, 32))
 }
 
 export function encrypt (key, message) {
@@ -225,4 +231,5 @@ export function decrypt (key, cipher) {
   return aesjs.utils.utf8.fromBytes(messageBytes)
 }
 
+export const fromBytes = aesjs.utils.hex.fromBytes
 export const toBytes = aesjs.utils.hex.toBytes
