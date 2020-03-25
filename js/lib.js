@@ -1,4 +1,9 @@
 import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
+import pbkdf2 from 'https://dev.jspm.io/npm:pbkdf2@3.0.17/index.js'
+
+// Do not change this, unless you are self-hosting Freecount and do not want the
+// data to be readable from another "instance"
+const SALT = '3dca5d3ce9ce8aa0a47b390960c76625'
 
 export function dispatch (target, name, payload) {
   if (payload instanceof Promise) {
@@ -201,12 +206,8 @@ export function html (parts, ...args) {
   return container.firstElementChild
 }
 
-export async function sha256 (message) {
-  const msgUint8 = new TextEncoder().encode(message)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+export function deriveKey (password) {
+  return aesjs.utils.hex.fromBytes(pbkdf2.pbkdf2Sync(password, SALT, 1, 32, 'sha256'))
 }
 
 export function encrypt (key, message) {

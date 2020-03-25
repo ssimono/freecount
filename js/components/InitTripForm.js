@@ -1,5 +1,5 @@
 import JsonForm from './JsonForm.js'
-import { dispatch, html, sha256 } from '../lib.js'
+import { dispatch, html, deriveKey } from '../lib.js'
 
 const MIN_MEMBERS = 2
 
@@ -47,5 +47,5 @@ function onPasswordToggle ({ target }) {
 }
 
 function onPasswordChange (event) {
-  dispatch(event.target, 'app:encryptionkeyupdate', sha256(event.target.value))
+  dispatch(event.target, 'app:encryptionkeyupdate', deriveKey(event.target.value))
 }

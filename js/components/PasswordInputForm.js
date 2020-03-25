@@ -1,4 +1,4 @@
-import { sha256 } from '../lib.js'
+import { deriveKey } from '../lib.js'
 import JsonForm from './JsonForm.js'
 
 export default class PasswordForm extends JsonForm {
@@ -8,7 +8,7 @@ export default class PasswordForm extends JsonForm {
   }
 
   format (passwordInput) {
-    return sha256(passwordInput.password)
+    return deriveKey(passwordInput.password)
   }
 }
 
