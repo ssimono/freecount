@@ -15,7 +15,7 @@ export function dispatch (target, name, payload) {
   setTimeout(() => target.dispatchEvent(event), 0)
 }
 
-export function parseRoutes (strRoutes) {
+function parseRoutes (strRoutes) {
   return strRoutes
     .map(([def, handler]) => [def.split(/(=>|->)/).filter(Boolean), handler, def])
     .map(([tokens, handler, strRoute]) => {
@@ -231,5 +231,31 @@ export function decrypt (key, cipher) {
   return aesjs.utils.utf8.fromBytes(messageBytes)
 }
 
+export function setupComponents (...components) {
+  const style = document.createElement('style')
+  for (const component of components) {
+    if (component.prototype instanceof HTMLElement) {
+      customElements.define(kebab(component.name), component)
+    }
+
+    if (typeof component.style === 'function') {
+      style.appendChild(document.createTextNode(component.style()))
+    } else if (typeof component.style === 'string') {
+      style.appendChild(document.createTextNode(component.style))
+    }
+  }
+
+  document.head.append(style)
+}
+
+function kebab (mixedCased) {
+  return mixedCased.split(/([A-Z])/).reduce(
+    (dashed, chunk, idx) => idx % 2 === 0 ? `${dashed}${chunk}` : `${dashed}-${chunk.toLowerCase()}`,
+    ''
+  ).replace(/^-|-$/, '')
+}
+
 export const fromBytes = aesjs.utils.hex.fromBytes
 export const toBytes = aesjs.utils.hex.toBytes
+
+export const _test = { parseRoutes, kebab }

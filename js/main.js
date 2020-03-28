@@ -1,11 +1,6 @@
-import { attachRoutes, dispatch, generateId, goTo } from './lib.js'
-import JsonForm from './components/JsonForm.js'
-import InitTripForm from './components/InitTripForm.js'
-import PasswordInputForm from './components/PasswordInputForm.js'
-import AddExpenseForm from './components/AddExpenseForm.js'
-import ItemList from './components/ItemList.js'
-
+import { attachRoutes, dispatch, generateId, goTo, setupComponents } from './lib.js'
 import Client, { sync, postCommand, parseAndDispatch } from './client.js'
+import components from './components/index.js'
 
 import { checkPull, updateMenu } from './handlers/general.js'
 import { showKnownTrips } from './handlers/setupPage.js'
@@ -48,11 +43,7 @@ export default function main () {
   const boxId = params.get('box') || generateId(32)
   const client = new Client(boxId)
 
-  customElements.define('item-list', ItemList)
-  customElements.define('json-form', JsonForm)
-  customElements.define('init-trip-form', InitTripForm)
-  customElements.define('password-input-form', PasswordInputForm)
-  customElements.define('add-expense-form', AddExpenseForm)
+  setupComponents(...components)
 
   withStored('known_trips', {}, knownTrips => {
     const encryptionKey = knownTrips[boxId] && knownTrips[boxId].key

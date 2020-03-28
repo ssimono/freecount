@@ -18,6 +18,13 @@ export default class InitTripForm extends JsonForm {
 
     return []
   }
+
+  static style() {
+    return `.init-trip .item input {
+      margin-bottom: 0;
+      width: 100%;
+    }`
+  }
 }
 
 function onMembersUpdate ({ target, detail }) {

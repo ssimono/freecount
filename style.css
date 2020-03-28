@@ -259,13 +259,6 @@ footer button {
   content: ''
 }
 
-/* ===== Init trip form */
-
-.init-trip .item input {
-  margin-bottom: 0;
-  width: 100%;
-}
-
 /* ===== Helpers */
 
 a.nav {

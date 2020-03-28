@@ -1,4 +1,4 @@
-import { html, parseRoutes, partition } from '../js/lib.js'
+import { html, partition, _test as libTest } from '../js/lib.js'
 import { validate } from '../js/client.js'
 import { computeDebts } from '../js/handlers/balance.js'
 import testAttachRoutes from './testAttachRoutes.js'
@@ -14,11 +14,13 @@ export default function () {
     suite('attachement', testAttachRoutes)
   })
   suite('Crypto', testCrypto)
+  suite('Kebab', testKebab)
 
   mocha.run()
 }
 
 function testParseRoutes () {
+  const parseRoutes = libTest.parseRoutes
   const tests = [
     ['click', null],
     ['submit => form', null],
@@ -154,5 +156,22 @@ function testHtml () {
 
     assert.equal(parent.querySelector('.child').innerText, 'SPAN')
     assert.lengthOf(grandParent.querySelectorAll('.child'), 3)
+  })
+}
+
+function testKebab () {
+  const kebab = libTest.kebab
+  test('compute kebab-case', () => {
+    const cases = [
+      ['MyComponent', 'my-component'],
+      ['MyVeryLongComponent', 'my-very-long-component'],
+      ['A', 'a'],
+      ['camelCased', 'camel-cased'],
+      ['kebab-already', 'kebab-already']
+    ]
+
+    for (const [string, expected] of cases) {
+      assert.equal(kebab(string), expected, `testing: "${string}"`)
+    }
   })
 }
