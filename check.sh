@@ -17,8 +17,12 @@ set -e
 echo checking…
 
 ! grep -r 'console\.log' js/
+
 standard --env mocha --env browser --globals assert tests/**.js
 standard --env browser js/**
 standard --env serviceworker worker.js
+
+git diff --cached --word-diff=plain --no-color -- worker.js \
+  | grep -qP '^const cacheKey =' || (echo 'Please update cacheKey in worker.js — Aborting' && false)
 
 echo all good!

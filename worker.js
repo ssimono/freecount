@@ -1,18 +1,26 @@
-// Increment this to simulate a new version of the worker even if the code didn't change.
-// This will allow cache clearing and clients refresh
-const deploy_key = 16 // eslint-disable-line
-const cache_key = 'main'
+const cacheKey = 'v1'
 
-self.addEventListener('install', event => {
-  event.waitUntil(caches.delete(cacheKey))
-  console.info('Service Worker install')
+self.addEventListener('install', (event) => {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keyList => {
+      return Promise.all(keyList.filter(key => key !== cacheKey).map(key => caches.delete(key)))
+    })
+  )
 })
 
 self.addEventListener('fetch', event => {
   const strategy = request => {
-    if (request.method === 'POST') {
+    const url = new URL(request.url)
+
+    if (url.pathname.match(/^\/worker/)) {
+      return controlWorker(request, url.pathname)
+    } else if (request.method === 'POST') {
       return fetch(request)
-    } else if (request.url.indexOf(self.location.host) >= 0 || request.url.indexOf('dev.jspm.io') >= 0) {
+    } else if (url.host === self.location.host || url.host === 'dev.jspm.io') {
       return cacheFirst(request)
     } else {
       return fetchEvents(event)
@@ -21,7 +29,7 @@ self.addEventListener('fetch', event => {
 
   event.respondWith(strategy(event.request).catch(e => {
     console.error(`Error when handling request: ${e}`)
-    return null
+    return new Response(JSON.stringify({ error: e.message }))
   }))
 })
 
@@ -29,10 +37,7 @@ async function fetchAndCache (request) {
   const response = await fetch(request)
   const cache = await caches.open(cacheKey)
 
-  cache.put(request, response.clone()).then(() => {
-    console.debug(`Cached request: ${request.method} ${request.url}`)
-  })
-
+  cache.put(request, response.clone())
   return response
 }
 
@@ -72,5 +77,15 @@ async function checkAndRefresh (request, cached, clientId) {
     for (const evt of newEvents) {
       client.postMessage(evt)
     }
+  }
+}
+
+async function controlWorker (request, pathname) {
+  switch (pathname) {
+    case '/worker/clear-cache':
+      await caches.delete(cacheKey)
+      return new Response('OK')
+    default:
+      return new Response('Not found', { status: 404, statusText: 'Not found' })
   }
 }

@@ -1,6 +1,7 @@
 import { attachRoutes, dispatch, generateId, goTo, setupComponents } from './lib.js'
 import Client, { sync, postCommand, parseAndDispatch } from './client.js'
 import components from './components/index.js'
+import { showNotification } from './components/notify.js'
 
 import { checkPull, updateMenu } from './handlers/general.js'
 import { showKnownTrips } from './handlers/setupPage.js'
@@ -33,6 +34,12 @@ const routes = [
   ['app:failed_to_add_expense', exp.onLocalNewExpense],
   ['app:sync', exp.clearLocal],
   ['app:did_add_expense', balanceOnNewExpense],
+  ['app:workerupdate', () => {
+    showNotification({
+      message: 'A new version of Freecount has been installed in the background.',
+      controls: ['Reload']
+    }).then(_ => location.reload())
+  }],
   ['touchstart => h1,[path="/trip"]', checkPull],
   ['app:pulldown', () => dispatch(document.body, 'app:sync')],
   ['app:start', exp.toggleRefreshButton]
@@ -128,8 +135,9 @@ function registerSW (client) {
   navigator.serviceWorker.register('./worker.js')
     .then(reg => {
       reg.onupdatefound = () => {
-        console.info('A new version of Service Worker available, reloading the page…')
-        setTimeout(window.location.reload(), 100)
+        fetch('/worker/clear-cache', { method: 'POST' }).then(() => {
+          dispatch(document.body, 'app:workerupdate', null)
+        })
       }
       console.info('Service Worker registered… Offline support active')
     })
