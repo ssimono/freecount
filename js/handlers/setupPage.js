@@ -6,10 +6,12 @@ export function showKnownTrips ({ target, detail }) {
     return
   }
   const paragraph = target.querySelector('.known-trips')
-  const items = boxIds.map(boxId => {
-    const item = detail[boxId]
-    return html`<li><a title="Open ${item.title}" href="./?box=${boxId}">${item.title}</a></li>`
-  })
+  const items = boxIds
+    .map(boxId => [boxId, detail[boxId]])
+    .filter(([ id, {title} ]) => !!title)
+    .map(([ id, {title} ]) =>
+      html`<li><a title="Open ${title}" href="./?box=${id}">${title}</a></li>`
+    )
 
   paragraph.querySelector('ul').append(...items)
   paragraph.style.setProperty('display', 'block')

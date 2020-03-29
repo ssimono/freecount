@@ -67,6 +67,12 @@ function submitHandler (validator, formatter) {
     const form = event.target
     const payload = getFormData(form)
     const errors = validator(payload)
+    const focused = document.activeElement
+
+    // Do not leave focus on form elements after submission
+    if(focused && focused.getAttribute('type') !== 'submit') {
+      focused.blur()
+    }
 
     if (errors.length) {
       JsonForm.showErrors(form, errors)
