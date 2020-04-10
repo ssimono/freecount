@@ -102,8 +102,15 @@ export default function main () {
     ['app:encryptionkeyupdate', ({ detail }) => {
       client.setKey(detail)
       persist('known_trips', {}, knownTrips => {
-        const currentValue = knownTrips[boxId] || {}
-        return Object.assign({}, knownTrips, { [boxId]: { ...currentValue, key: detail } })
+        const content = knownTrips[boxId] || {}
+        if (!Object.getOwnPropertyNames(content).length && detail === null) {
+          // Do not keep persisting if we simply uncheck password protection when filling the init trip form
+          delete knownTrips.boxId
+          return knownTrips
+        } else {
+          content.key = detail
+          return Object.assign({}, knownTrips, { [boxId]: { ...content, key: detail } })
+        }
       })
     }],
     ['app:posterror', ({ target, detail }) => {
