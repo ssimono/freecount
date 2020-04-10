@@ -1,17 +1,7 @@
 import { dispatch, html, partition, raw } from '../lib.js'
 import { localPretty } from './utils.js'
 
-export function onNewExpense ({ detail }) {
-  const balanceList = document.getElementById('balance_list')
-  _onNewExpense({ target: balanceList, detail })
-}
-
-export function onInitTrip ({ detail }) {
-  const balanceList = document.getElementById('balance_list')
-  _onInitTrip({ target: balanceList, detail })
-}
-
-function _onInitTrip ({ target, detail }) {
+export function onInitTrip (target, detail) {
   const balances = new Map()
   for (const m of detail.members) {
     balances.set(m, 0)
@@ -21,8 +11,8 @@ function _onInitTrip ({ target, detail }) {
   target.cache = balances
 }
 
-function _onNewExpense ({ target, detail }) {
-  const { creditor, participants, amount } = detail
+export function onNewExpense (target, expense) {
+  const { creditor, participants, amount } = expense
 
   if (!participants.length) {
     return
@@ -42,6 +32,18 @@ function _onNewExpense ({ target, detail }) {
   }
 
   render(target, balances)
+}
+
+export function onSettleUpClick ({ target, detail }) {
+  const settlement = {
+    amount: detail.amount,
+    date: (new Date()).toISOString().substr(0, 10),
+    creditor: detail.debtor,
+    participants: [ detail.creditor ],
+    title: "Settlement"
+  }
+  dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
+  target.addEventListener('app:http_request_stop', () => dispatch(target, 'app:sync'))
 }
 
 function getBalanceMap (target) {

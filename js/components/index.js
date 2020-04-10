@@ -4,6 +4,8 @@ import PasswordInputForm from './PasswordInputForm.js'
 import AddExpenseForm from './AddExpenseForm.js'
 import ItemList from './ItemList.js'
 import notify from './notify.js'
+import FcHome from './FcHome.js'
+import FcTrip from './FcTrip.js'
 
 export default [
   JsonForm,
@@ -12,4 +14,6 @@ export default [
   PasswordInputForm,
   AddExpenseForm,
   notify,
+  FcHome,
+  FcTrip
 ]

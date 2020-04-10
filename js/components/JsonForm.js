@@ -3,14 +3,11 @@ import { dispatch, html } from '../lib.js'
 export default class JsonForm extends HTMLElement {
   connectedCallback () {
     // Use a nested form element to circumvent the lack of customized built-in elements in Safari
-    const form = html`<form data-name="${this.getAttribute('name')}">`
+    const form = this.appendChild(html`<form data-name="${this.getAttribute('name')}">`)
 
-    form.innerHTML = this.innerHTML
-    while (this.firstChild) {
-      this.removeChild(this.firstChild)
+    while (this.firstChild !== form) {
+      form.insertBefore(this.firstChild, null)
     }
-
-    this.appendChild(form)
 
     this.addEventListener('submit', submitHandler(
       this.validate.bind(this),
@@ -70,18 +67,14 @@ function submitHandler (validator, formatter) {
     const focused = document.activeElement
 
     // Do not leave focus on form elements after submission
-    if(focused && focused.getAttribute('type') !== 'submit') {
+    if (focused && focused.getAttribute('type') !== 'submit') {
       focused.blur()
     }
 
     if (errors.length) {
       JsonForm.showErrors(form, errors)
     } else {
-      dispatch(
-        form,
-        `app:submit_${event.target.dataset.name}`,
-        formatter(payload)
-      )
+      dispatch(form.parentElement, 'jsonsubmit', formatter(payload))
     }
   }
 }

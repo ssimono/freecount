@@ -66,7 +66,11 @@ async function fetchEventChunk (endpoint, boxId, offset) {
 }
 
 export function sync (client) {
-  return ({ target }) => {
+  return ({ target, detail }) => {
+    if (detail && 'key' in detail) {
+      client.setKey(detail.key)
+    }
+
     dispatch(target, 'app:http_request_start')
     client.getAllRemoteEvents().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))

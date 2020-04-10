@@ -1,14 +1,14 @@
 import { html } from '../lib.js'
 
-export default function notify({message, controls, callback}) {
+export default function notify ({ message, controls, callback }) {
   const notification = html`<div role="modal" class="notification">
     <p>${message}</p>
     ${controls.map(control => html`<button type="button">${control}</button>`)}
   </div>`
 
   if (callback) {
-    notification.addEventListener('click', ({target, currentTarget}) => {
-      if(target.tagName === 'BUTTON') {
+    notification.addEventListener('click', ({ target, currentTarget }) => {
+      if (target.tagName === 'BUTTON') {
         callback(target.innerText)
         currentTarget.parentNode.removeChild(currentTarget)
       }
@@ -18,9 +18,9 @@ export default function notify({message, controls, callback}) {
   return notification
 }
 
-export function showNotification(props) {
+export function showNotification (props) {
   return new Promise((resolve) => {
-    document.body.append(notify({...props, callback:resolve}))
+    document.body.append(notify({ ...props, callback: resolve }))
   })
 }
 

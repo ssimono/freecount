@@ -1,45 +1,35 @@
-import { dispatch, goTo, html } from '../lib.js'
+import { html } from '../lib.js'
 import { localPretty } from './utils.js'
 
-export function onTripReady ({ target, detail }) {
-  document.querySelector('h1').innerText = detail.name
-  document.getElementById('expense_list').classList.add('ready')
+export function onInitTrip (target, detail) {
+  target.classList.add('ready')
 
-  const creditorChoice = document.getElementById('creditor_choice')
-  const participantsChoice = document.getElementById('participants_choice')
-
-  detail.members.forEach((member, idx) => {
-    creditorChoice.append(
-      html`<input type="radio" name="creditor" id="add_expense_creditor_${idx}" value="${member}" required></input>`,
-      html`<label for="add_expense_creditor_${idx}">${member}</label>`
-    )
-
-    participantsChoice.append(
-      html`<input type="checkbox" name="participants[]" id="add_expense_participant_${idx}" value="${member}" checked></input>`,
-      html`<label for="add_expense_participant_${idx}">${member}</label>`
-    )
-  })
+  // Hide the explicit refresh if the touch events are enabled
+  if (navigator.maxTouchPoints > 0) {
+    const button = document.getElementById('refresh_button')
+    button.parentNode.removeChild(button)
+  }
 }
 
-export function onRefreshButtonClicked (event) {
-  event.preventDefault()
-  dispatch(event.target, 'app:sync')
+export function onFirstExpense (target) {
+  const placeholder = target.querySelector('.placeholder')
+  placeholder.parentNode.removeChild(placeholder)
 }
 
-export function onNewExpense ({ detail }) {
-  document.getElementById('expense_list').prepend(expenseItem(detail))
+export function onNewExpense (target, expense) {
+  target.prepend(expenseItem(expense))
 }
 
-export function onImmediateNewExpense ({ detail }) {
+export function onImmediateNewExpense (list, detail) {
   const newItem = expenseItem(detail)
   newItem.classList.add('immediate')
-  document.getElementById('expense_list').prepend(newItem)
+  list.prepend(newItem)
 }
 
-export function onLocalNewExpense ({ detail }) {
+export function onLocalNewExpense (list, detail) {
   const newItem = expenseItem(detail)
   newItem.classList.add('local')
-  document.getElementById('expense_list').prepend(newItem)
+  list.prepend(newItem)
 }
 
 export function clearLocal () {
@@ -53,39 +43,6 @@ export function clearLocal () {
   }
 }
 
-export function onAddExpenseFormOpen ({ target }) {
-  const titleInput = target.querySelector('form [name="title"]')
-  const dateInput = target.querySelector('form [name="date"]')
-
-  if (!titleInput.value) {
-    titleInput.focus()
-  }
-
-  if (!dateInput.value) {
-    dateInput.value = (new Date()).toISOString().substr(0, 10)
-  }
-}
-
-export function initTrip ({ target, detail }) {
-  dispatch(target, 'app:postcommand', { command: 'init_trip', data: detail })
-}
-
-export function addExpense ({ target, detail }) {
-  dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
-  target.addEventListener('app:http_request_stop', () => {
-    dispatch(target, 'app:sync')
-    goTo('/trip/expenses')
-  }, { once: true })
-}
-
-export function toggleRefreshButton () {
-  // Hide the explicit refresh if the touch events are enabled
-  if (navigator.maxTouchPoints > 0) {
-    const button = document.getElementById('refresh_button')
-    button.parentNode.removeChild(button)
-  }
-}
-
 function expenseItem (expense) {
   return html`<li>
     <span class="title">${expense.title}</span>
@@ -93,16 +50,4 @@ function expenseItem (expense) {
     <span class="creditor">paid by ${expense.creditor}</span>
     <time date="${expense.date}">${(new Date(expense.date)).toDateString().slice(0, -5)}</time>
   </li>`
-}
-
-export function onSettleUpClick ({ target, detail }) {
-  const settlement = {
-    amount: detail.amount,
-    date: (new Date()).toISOString().substr(0, 10),
-    creditor: detail.debtor,
-    participants: [ detail.creditor ],
-    title: "Settlement"
-  }
-  dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
-  target.addEventListener('app:http_request_stop', () => dispatch(document.body, 'app:sync'))
 }

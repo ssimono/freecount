@@ -163,6 +163,24 @@ footer button {
   padding: 0.5rem;
 }
 
+/* ===== Known trips */
+.known-trips {
+  display: none;
+  text-align: center;
+}
+.known-trips li {
+  border-bottom: none;
+  display: inline-block;
+  font-size: 1.2rem;
+  padding: 0 0.2rem;
+}
+.known-trips li::before {
+  content: '/ '
+}
+.known-trips li:first-child::before {
+  content: ''
+}
+
 /* ===== Expense list */
 .expense-list li {
   display: grid;
@@ -179,17 +197,8 @@ footer button {
 .expense-list .creditor, .expense-list time {font-size: 0.8rem;}
 .expense-list .amount, .expense-list time {justify-self: end;}
 .expense-list .local { background-color: var(--button);}
-
-.expense-list .placeholder {
-  display: none;
-  padding: 3rem;
-}
-.expense-list .placeholder p:first-child {
-  font-size: 1.6rem;
-}
-.expense-list.ready .placeholder:only-child {
-  display: block;
-}
+.expense-list .placeholder {display: block; padding: 3rem;}
+.expense-list .placeholder p:first-child {font-size: 1.6rem;}
 
 /* ===== Balance list */
 .balance-list {
@@ -239,24 +248,6 @@ footer button {
 }
 .debt-list ul {
   list-style-type: disc;
-}
-
-/* ===== Previous trips */
-.known-trips {
-  display: none;
-  text-align: center;
-}
-.known-trips li {
-  border-bottom: none;
-  display: inline-block;
-  font-size: 1.2rem;
-  padding: 0 0.2rem;
-}
-.known-trips li::before {
-  content: '/ '
-}
-.known-trips li:first-child::before {
-  content: ''
 }
 
 /* ===== Helpers */

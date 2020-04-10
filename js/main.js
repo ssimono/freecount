@@ -1,49 +1,35 @@
-import { attachRoutes, dispatch, generateId, goTo, setupComponents } from './lib.js'
+import { attachRoutes, dispatch, generateId, goTo, html, setupComponents } from './lib.js'
 import Client, { sync, postCommand, parseAndDispatch } from './client.js'
 import components from './components/index.js'
 import { showNotification } from './components/notify.js'
 
-import { checkPull, updateMenu } from './handlers/general.js'
-import { showKnownTrips } from './handlers/setupPage.js'
-import * as exp from './handlers/expenses.js'
-import {
-  onInitTrip as balanceOnInitTrip,
-  onNewExpense as balanceOnNewExpense
-} from './handlers/balance.js'
-
 const routes = [
   // Navigation
   ['click -> [to]', ({ target }) => goTo(target.getAttribute('to'))],
+  ['app:navigate', ({ target, detail }) => {
+    switch (detail) {
+      case '/setup':
+        target.append(html`<fc-home></fc-home>`)
+        break
+
+      case '/trip':
+        target.append(html`<fc-trip></fc-trip>`)
+        break
+    }
+  }],
 
   // Generic interaction helpers
-  ['click => menu', updateMenu],
   ['app:syncerror', ({ detail }) => alert(detail)],
   ['app:http_request_start', ({ currentTarget }) => currentTarget.classList.add('loading')],
   ['app:http_request_stop', ({ currentTarget }) => currentTarget.classList.remove('loading')],
 
   // App logic
-  ['click => #refresh_button', exp.onRefreshButtonClicked],
-  ['app:settle_up', exp.onSettleUpClick],
-  ['app:knowntrips', showKnownTrips],
-  ['app:submit_init_trip', exp.initTrip],
-  ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],
-  ['app:submit_add_expense', exp.addExpense],
-  ['app:did_init_trip', exp.onTripReady],
-  ['app:did_init_trip', balanceOnInitTrip],
-  ['app:did_add_expense', exp.onNewExpense],
-  ['app:just_did_add_expense', exp.onImmediateNewExpense],
-  ['app:failed_to_add_expense', exp.onLocalNewExpense],
-  ['app:sync', exp.clearLocal],
-  ['app:did_add_expense', balanceOnNewExpense],
   ['app:workerupdate', () => {
     showNotification({
       message: 'A new version of Freecount has been installed in the background.',
       controls: ['Reload']
     }).then(_ => location.reload())
-  }],
-  ['touchstart => h1,[path="/trip"]', checkPull],
-  ['app:pulldown', () => dispatch(document.body, 'app:sync')],
-  ['app:start', exp.toggleRefreshButton]
+  }]
 ]
 
 export default function main () {
@@ -53,17 +39,10 @@ export default function main () {
 
   setupComponents(...components)
 
-  withStored('known_trips', {}, knownTrips => {
-    const encryptionKey = knownTrips[boxId] && knownTrips[boxId].key
-    if (encryptionKey) {
-      client.setKey(encryptionKey)
-    }
-  })
-
   attachRoutes(routes, document.body)
 
   if (params.has('box')) {
-    dispatch(document.body, 'app:sync')
+    goTo('/trip')
   } else {
     goTo('/setup')
   }
@@ -79,25 +58,20 @@ export default function main () {
     }],
     ['app:did_init_trip', ({ detail }) => {
       document.title = `${detail.name} | Freecount`
-      goTo('/trip/expenses')
-      persist('known_trips', {}, knownTrips => {
-        const currentValue = knownTrips[boxId] || {}
-        return Object.assign(
-          {},
-          knownTrips,
-          { [boxId]: { ...currentValue, title: detail.name, key: client.getKey() } }
-        )
+    }],
+    ['local:fetch', ({ target }) => {
+      withStored('known_trips', {}, (trips) => {
+        dispatch(target, 'local:knowntrips', trips)
+        if (trips[boxId]) {
+          dispatch(target, 'local:trip', trips[boxId])
+        }
       })
     }],
-    ['app:navigate -> [path="/setup"]', ({ target, detail }) => {
-      withStored('known_trips', {}, dispatch.bind(null, target, 'app:knowntrips'))
-    }],
-    ['app:did_unauthorized', () => {
-      goTo('/password_input')
-    }],
-    ['app:submit_password_input', ({ detail, target }) => {
-      client.setKey(detail)
-      dispatch(target, 'app:sync')
+    ['local:storetrip', ({ target, detail }) => {
+      persist('known_trips', {}, knownTrips => {
+        const content = knownTrips[boxId] || {}
+        return Object.assign({}, knownTrips, { [boxId]: detail(content) })
+      })
     }],
     ['app:encryptionkeyupdate', ({ detail }) => {
       client.setKey(detail)

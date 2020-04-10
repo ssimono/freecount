@@ -27,7 +27,7 @@ function Raw (content) {
 export default function html (parts, ...args) {
   const randomPrefix = btoa(Math.random()).replace(/^\d+/, '').substring(0, 8)
   const placeholderPattern = RegExp(`${randomPrefix}:(\\d+)`)
-  const placeholderPatternGlobal = new RegExp(placeholderPattern, 'g')
+  const placeholderPatternGlobal = RegExp(placeholderPattern, 'g')
   const container = document.createElement('div')
   let replaced = 0
 
