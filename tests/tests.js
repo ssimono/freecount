@@ -1,9 +1,10 @@
-import { html, partition, _test as libTest } from '../js/lib.js'
+import { partition, _test as libTest } from '../js/lib.js'
 import { validate } from '../js/client.js'
 import { pretty } from '../js/handlers/utils.js'
 import { computeDebts } from '../js/handlers/balance.js'
 import testAttachRoutes from './testAttachRoutes.js'
 import testCrypto from './testCrypto.js'
+import testHtml from './testHtml.js'
 
 export default function () {
   suite('Events validation', testValidate)
@@ -156,32 +157,6 @@ function testComputeDebts () {
       { creditor: 'Erik', debtor: 'Christopher', amount: 300 },
       { creditor: 'Thomas', debtor: 'Vasco', amount: 100 }
     ])
-  })
-}
-
-function testHtml () {
-  test('safely escape html body and attributes', () => {
-    const name = '<script>alert("you got hacked")</script>'
-    const result = html`
-      <p>
-        Hello ${name}...<strong name="heading-${'5" malicious="l337'}">${'and welcome'}</strong>
-      </p>`
-
-    assert.equal(result.tagName, 'P')
-    assert.equal(result.querySelector('strong').innerText, 'and welcome')
-    assert.equal(result.querySelector('script'), null)
-    assert.isTrue(result.innerText.indexOf('<script>') > 0)
-    assert.equal(result.querySelector('strong').getAttribute('malicious'), null)
-    assert.equal(result.querySelector('strong').getAttribute('name'), 'heading-5" malicious="l337')
-  })
-
-  test('inserts dynamic DOM elements', () => {
-    const child = html`<span class="child">SPAN</span>`
-    const parent = html`<p>Insert a ${child} here</p>`
-    const grandParent = html`<div>${[parent, parent.cloneNode(true), parent.cloneNode(true)]}<div>`
-
-    assert.equal(parent.querySelector('.child').innerText, 'SPAN')
-    assert.lengthOf(grandParent.querySelectorAll('.child'), 3)
   })
 }
 

@@ -1,4 +1,4 @@
-import { dispatch, html, partition } from '../lib.js'
+import { dispatch, html, partition, raw } from '../lib.js'
 import { localPretty } from './utils.js'
 
 export function onNewExpense ({ detail }) {
@@ -67,7 +67,7 @@ function render (target, balances) {
     const className = balance >= 0 && 'positive' || 'negative'
     target.append(
       html`<dt class="${className}">${member}</dt>`,
-      html`<dd data-value="${balance}" style="--balance: ${parseInt(balance)}" class="${className}">${localPretty(balance, true)}</dd>`
+      html`<dd data-value="${balance}" style="--balance: ${raw(parseInt(balance))}" class="${className}">${localPretty(balance, true)}</dd>`
     )
     max = Math.max(max, balance)
   }

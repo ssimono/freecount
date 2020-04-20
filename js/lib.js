@@ -1,5 +1,6 @@
 import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
 import fastSha from 'https://dev.jspm.io/npm:fast-sha256@1.3.0/sha256.min.js'
+export { default as html, raw } from './html.js'
 
 // Do not change this, unless you are self-hosting Freecount and do not want the
 // data to be readable from another "instance"
@@ -136,74 +137,6 @@ export function partition (predicate, values) {
   }
 
   return map
-}
-
-export function html (parts, ...args) {
-  const randomPrefix = generateId(8)
-  const placeholder = n => `<!--${randomPrefix} ${n}-->`
-  const container = document.createElement('div')
-
-  container.innerHTML = parts.slice(1).reduce(
-    (inner, part, idx) => inner + placeholder(idx) + part,
-    parts[0]
-  )
-
-  if (container.children.length > 1) {
-    throw new Error('html must return only one root element')
-  }
-
-  let replaced = 0
-  const commentType = NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_CDATA_SECTION
-  const elementType = NodeFilter.SHOW_ELEMENT
-  const nodes = document.createNodeIterator(container, commentType | elementType)
-  const placeholderPattern = new RegExp(`<!--${randomPrefix} (\\d)-->`)
-
-  for (let node = nodes.nextNode(); node !== null; node = nodes.nextNode()) {
-    if (node.nodeType & commentType) {
-      const [prefix, idx] = node.nodeValue.split(' ')
-      if (prefix !== randomPrefix) {
-        continue
-      }
-
-      const arg = args[parseInt(idx, 10)]
-
-      if (arg instanceof Element) {
-        node.replaceWith(arg)
-        replaced++
-      } else if (arg instanceof Array || arg instanceof HTMLCollection) {
-        const parent = node.parentElement
-        for (const child of arg) {
-          if (!(child instanceof Element)) {
-            throw new Error(`Dynamic array placeholder contains non DOM Element: ${child}`)
-          }
-          parent.insertBefore(child, node)
-        }
-        parent.removeChild(node)
-        replaced++
-      } else {
-        node.replaceWith(document.createTextNode(`${arg}`))
-        replaced++
-      }
-    } else if ((node.nodeType & elementType) && node.attributes.length) {
-      for (const attr of Array.from(node.attributes)) {
-        const sanitized = attr.value.replace(
-          placeholderPattern,
-          (match, idx) => `${args[idx]}`
-        )
-
-        if (sanitized !== attr.value) {
-          node.setAttribute(attr.name, sanitized)
-          replaced++
-        }
-      }
-    }
-  }
-
-  if (replaced !== args.length) {
-    throw new Error('could not insert dynamic parts of the template string')
-  }
-
-  return container.firstElementChild
 }
 
 export function deriveKey (password) {
