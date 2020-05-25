@@ -23,6 +23,7 @@ const routes = [
 
   // App logic
   ['click => #refresh_button', exp.onRefreshButtonClicked],
+  ['click -> #settle_up', exp.onSettleUpClick],
   ['app:knowntrips', showKnownTrips],
   ['app:submit_init_trip', exp.initTrip],
   ['app:navigate => [path="/add_expense"]', exp.onAddExpenseFormOpen],

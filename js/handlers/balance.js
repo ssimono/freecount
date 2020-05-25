@@ -79,11 +79,18 @@ function render (target, balances) {
 
 function renderDebts (target, debts) {
   target.classList.toggle('fed', !!debts.length)
-  const makeDebt = debt => html`
+
+
+  const makeDebt = debt => debt.amount != 0 ? html`
     <li>
       <em>${debt.debtor}</em>
       gives <strong><data value="${debt.amount}">${pretty(debt.amount)}</data></strong>
       to <em>${debt.creditor}</em>
+      <button href="#" title="Settle up" role="button" data="${JSON.stringify(debt)}"id="settle_up">Settle up</a>
+    </li>`
+    : html`<li>
+        <em>${debt.debtor}</em>
+        has settled debts
     </li>`
 
   target.removeChild(target.lastElementChild)

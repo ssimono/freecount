@@ -94,3 +94,21 @@ function expenseItem (expense) {
     <time date="${expense.date}">${(new Date(expense.date)).toDateString().slice(0, -5)}</time>
   </li>`
 }
+
+export function onSettleUpClick (event) {
+  event.preventDefault()
+  const target = event.target
+  const debt = JSON.parse(event.target.getAttribute("data"))
+  const settlement = {
+    amount: debt.amount,
+    date: (new Date()).toISOString().substr(0, 10),
+    creditor: debt.debtor,
+    participants: [ debt.creditor ],
+    title: "Settlement"
+  }
+  dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
+  target.addEventListener('app:http_request_stop', () => {
+    dispatch(target, 'app:sync')
+    goTo('/trip/expenses')
+  }, { once: true })
+}
