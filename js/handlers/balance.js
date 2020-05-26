@@ -1,4 +1,4 @@
-import { html, partition } from '../lib.js'
+import { dispatch, html, partition } from '../lib.js'
 import { pretty } from './utils.js'
 
 export function onNewExpense ({ detail }) {
@@ -80,18 +80,20 @@ function render (target, balances) {
 function renderDebts (target, debts) {
   target.classList.toggle('fed', !!debts.length)
 
-
-  const makeDebt = debt => debt.amount != 0 ? html`
+  const makeDebt = debt => {
+    const t = html`
     <li>
       <em>${debt.debtor}</em>
       gives <strong><data value="${debt.amount}">${pretty(debt.amount)}</data></strong>
       to <em>${debt.creditor}</em>
-      <button href="#" title="Settle up" role="button" data="${JSON.stringify(debt)}"id="settle_up">Settle up</a>
+      <button title="Settle up" role="button">Settle up</button>
     </li>`
-    : html`<li>
-        <em>${debt.debtor}</em>
-        has settled debts
-    </li>`
+    const button = t.lastElementChild
+    button.addEventListener('click', () => {
+      dispatch(t, 'app:settle_up', debt)
+    })
+    return t
+  }
 
   target.removeChild(target.lastElementChild)
   target.append(html`<ul>${debts.map(makeDebt)}</ul>`)

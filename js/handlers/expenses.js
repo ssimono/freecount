@@ -95,20 +95,14 @@ function expenseItem (expense) {
   </li>`
 }
 
-export function onSettleUpClick (event) {
-  event.preventDefault()
-  const target = event.target
-  const debt = JSON.parse(event.target.getAttribute("data"))
+export function onSettleUpClick ({ target, detail }) {
   const settlement = {
-    amount: debt.amount,
+    amount: detail.amount,
     date: (new Date()).toISOString().substr(0, 10),
-    creditor: debt.debtor,
-    participants: [ debt.creditor ],
+    creditor: detail.debtor,
+    participants: [ detail.creditor ],
     title: "Settlement"
   }
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
-  target.addEventListener('app:http_request_stop', () => {
-    dispatch(target, 'app:sync')
-    goTo('/trip/expenses')
-  }, { once: true })
+  target.addEventListener('app:http_request_stop', () => dispatch(document.body, 'app:sync'))
 }
