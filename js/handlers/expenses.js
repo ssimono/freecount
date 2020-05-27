@@ -94,3 +94,15 @@ function expenseItem (expense) {
     <time date="${expense.date}">${(new Date(expense.date)).toDateString().slice(0, -5)}</time>
   </li>`
 }
+
+export function onSettleUpClick ({ target, detail }) {
+  const settlement = {
+    amount: detail.amount,
+    date: (new Date()).toISOString().substr(0, 10),
+    creditor: detail.debtor,
+    participants: [ detail.creditor ],
+    title: "Settlement"
+  }
+  dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
+  target.addEventListener('app:http_request_stop', () => dispatch(document.body, 'app:sync'))
+}
