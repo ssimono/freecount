@@ -1,4 +1,4 @@
-import { attachRoutes, dispatch, goTo, html } from '../lib.js'
+import { attachRoutes, dispatch, fragment, goTo, html } from '../lib.js'
 import AddExpenseForm from './AddExpenseForm.js'
 
 import {
@@ -61,13 +61,11 @@ function onRefreshButtonClicked (event) {
 }
 
 function onInitTrip ({ currentTarget, detail }) {
-  currentTarget.append(
-    html`
+  currentTarget.append(fragment`
     <menu>
       <h2 to="expenses" class="active">Expenses</h2>
       <h2 to="balance">Balance</h2>
-    </menu>`,
-    html`
+    </menu>
     <section path="expenses">
       <div class="spinner"></div>
       <ul id="expense_list" class="expense-list">
@@ -81,16 +79,14 @@ function onInitTrip ({ currentTarget, detail }) {
         <button to="add_expense" title="Add an expense">Add an expense</button>
         <a href="#" title="Refresh the expenses" role="button" class="nav" id="refresh_button">↻ Refresh</a>
       </footer>
-    </section>`,
-    html`
+    </section>
     <section path="balance">
       <dl id="balance_list" class="balance-list"></dl>
       <div class="debt-list">
         <h4>How to balance?</h4>
         <ul></ul>
       </div>
-    </section>`,
-    html`
+    </section>
     <section path="add_expense">${AddExpenseForm(detail.members)}</section>`
   )
 

@@ -1,10 +1,10 @@
-import { attachRoutes, dispatch, deriveKey, html } from '../lib.js'
+import { attachRoutes, dispatch, deriveKey, fragment, html } from '../lib.js'
 
 import InitTripForm from './InitTripForm.js'
 
 export default class FcHome extends HTMLElement {
   connectedCallback () {
-    this.append(...initState())
+    this.append(initState())
     attachRoutes([
       ['jsonsubmit -> [name="init_trip"]', onInitTripSubmit],
       ['change -> #init_trip_password', onPasswordChange],
@@ -16,20 +16,18 @@ export default class FcHome extends HTMLElement {
   }
 }
 
-const initState = () => [
-  html`<h2>Let's start a trip</h2>`,
-  InitTripForm(),
-  html`
-    <div class="known-trips">
-      <h3>Previous trips</h3>
-      <ul></ul>
-    </div>`,
-  html`
-    <footer>
-      <span>&nbsp;</span>
-      <a href="https://github.com/ssimono/freecount" title="Freecount's source code">About</a>
-    </footer>`
-]
+const initState = () => fragment`
+  <h2>Let's start a trip</h2>
+  ${InitTripForm()}
+  <div class="known-trips">
+    <h3>Previous trips</h3>
+    <ul></ul>
+  </div>
+  <footer>
+    <span>&nbsp;</span>
+    <a href="https://github.com/ssimono/freecount" title="Freecount's source code">About</a>
+  </footer>
+`
 
 function onInitTripSubmit ({ target, detail }) {
   dispatch(target, 'app:postcommand', { command: 'init_trip', data: detail })

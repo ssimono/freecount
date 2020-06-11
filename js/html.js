@@ -24,11 +24,12 @@ function Raw (content) {
   this.content = content
 }
 
-export default function html (parts, ...args) {
+function _html (singleChild, parts, args) {
   const randomPrefix = btoa(Math.random()).replace(/^\d+/, '').substring(0, 8)
   const placeholderPattern = RegExp(`${randomPrefix}:(\\d+)`)
   const placeholderPatternGlobal = RegExp(placeholderPattern, 'g')
   const container = document.createElement('div')
+  const fragment = new DocumentFragment()
   let replaced = 0
 
   container.innerHTML = parts.slice(1).reduce(
@@ -43,11 +44,13 @@ export default function html (parts, ...args) {
     parts[0]
   )
 
-  if (container.children.length > 1) {
+  fragment.append(...container.childNodes)
+
+  if (singleChild && fragment.children.length > 1) {
     throw new Error('html must return only one root element')
   }
 
-  const nodes = document.createNodeIterator(container, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+  const nodes = document.createNodeIterator(fragment, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
 
   for (let node = nodes.nextNode(); node !== null && replaced < args.length; node = nodes.nextNode()) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -112,7 +115,15 @@ export default function html (parts, ...args) {
     throw new Error('could not insert dynamic parts of the template string')
   }
 
-  return container.firstElementChild
+  return singleChild ? fragment.firstElementChild : fragment
+}
+
+export default function html (parts, ...args) {
+  return _html(true, parts, args)
+}
+
+export function fragment (parts, ...args) {
+  return _html(false, parts, args)
 }
 
 export function raw (content) {

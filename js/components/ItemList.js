@@ -1,4 +1,4 @@
-import { html } from '../lib.js'
+import { fragment } from '../lib.js'
 
 export default class ItemList extends HTMLElement {
   connectedCallback () {
@@ -17,17 +17,16 @@ export default class ItemList extends HTMLElement {
   }
 
   addItem () {
-    const addButton = this.querySelector('.add')
     const template = this.querySelector('template')
     const itemContent = template
       ? template.content.cloneNode(true).children
       : ''
 
-    const newItem = html`<div class="item">${itemContent}</div>`
-    const removeButton = html`<button type="button" class="remove">×</button>`
-
-    this.insertBefore(newItem, addButton)
-    this.insertBefore(removeButton, addButton)
+    this.insertBefore(fragment`
+      <div class="item">${itemContent}</div>
+      <button type="button" class="remove">×</button>`,
+      this.querySelector('.add')
+    )
   }
 }
 

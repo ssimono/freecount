@@ -1,4 +1,4 @@
-import html, { raw } from '../js/html.js'
+import html, { fragment, raw } from '../js/html.js'
 
 export default function testHtml () {
   test('safely creates nested DOM Elements', () => {
@@ -51,5 +51,18 @@ export default function testHtml () {
   test('handles raw input', () => {
     assert.throws(() => html`<div onclick="${"alert('xss')"}">click me</div>`)
     assert.doesNotThrow(() => html`<div onclick="${raw("alert('xss')")}">click me</div>`)
+  })
+
+  test('allows several root elements when using fragment', () => {
+    const frag = fragment`<header>Hello head</header><main>Hello main</main>`
+    assert.isTrue(frag instanceof DocumentFragment)
+    assert.equal(frag.children.length, 2)
+  })
+
+  test('can interpolate html within fragments', () => {
+    const main = html`<main>Hello main</main>`
+    const frag = fragment`<header>Hello head</header>${main}`
+    assert.isTrue(frag instanceof DocumentFragment)
+    assert.equal(frag.children.length, 2)
   })
 }
