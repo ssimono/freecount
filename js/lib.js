@@ -117,7 +117,7 @@ export function goTo (newPath) {
 
   if (toShow.length) {
     const lastPage = toShow[0]
-    dispatch(lastPage, 'app:navigate', lastPage.getAttribute('path'))
+    dispatch(lastPage, 'navigate', lastPage.getAttribute('path'))
   }
 }
 

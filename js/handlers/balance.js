@@ -43,7 +43,7 @@ export function onSettleUpClick ({ target, detail }) {
     title: "Settlement"
   }
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
-  target.addEventListener('app:http_request_stop', () => dispatch(target, 'app:sync'))
+  target.addEventListener('http_request_stop', () => dispatch(target, 'sync'))
 }
 
 function getBalanceMap (target) {
@@ -92,7 +92,7 @@ function renderDebts (target, debts) {
     </li>`
     const button = t.lastElementChild
     button.addEventListener('click', () => {
-      dispatch(t, 'app:settle_up', debt)
+      dispatch(t, 'settle_up', debt)
     })
     return t
   }

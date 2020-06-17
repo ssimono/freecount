@@ -26,17 +26,17 @@ export default class FcTrip extends HTMLElement {
       ['app:did_add_expense', onNewExpense],
       ['app:just_did_add_expense', withIdTarget('expense_list', onImmediateNewExpense)],
       ['app:failed_to_add_expense', withIdTarget('expense_list', onLocalNewExpense)],
-      ['app:navigate -> [path="add_expense"]', onAddExpenseFormOpen],
       ['app:did_unauthorized', onUnauthorized],
-      ['app:settle_up', onSettleUpClick],
+      ['settle_up', onSettleUpClick],
+      ['navigate -> [path="add_expense"]', onAddExpenseFormOpen],
       ['jsonsubmit -> [name="add_expense"]', onAddExpenseFormSubmit],
       ['jsonsubmit -> [name="password_input"]', onPasswordSubmit],
-      ['app:sync', clearLocal],
-      ['app:pulldown', ({ target }) => dispatch(target, 'app:sync')],
+      ['sync', clearLocal],
+      ['pulldown', ({ target }) => dispatch(target, 'sync')],
     ], this)
 
     goTo('expenses')
-    dispatch(this, 'app:sync')
+    dispatch(this, 'sync')
   }
 }
 
@@ -57,7 +57,7 @@ function onTabSwitch ({ target }) {
 
 function onRefreshButtonClicked (event) {
   event.preventDefault()
-  dispatch(event.target, 'app:sync')
+  dispatch(event.target, 'sync')
 }
 
 function onInitTrip ({ currentTarget, detail }) {
@@ -120,7 +120,7 @@ function onUnauthorized ({ target }) {
 }
 
 function onPasswordSubmit({currentTarget, detail }) {
-  dispatch(currentTarget, 'app:sync', { key: detail })
+  dispatch(currentTarget, 'sync', { key: detail })
 }
 
 function onAddExpenseFormOpen ({ target }) {
@@ -138,8 +138,8 @@ function onAddExpenseFormOpen ({ target }) {
 
 function onAddExpenseFormSubmit ({ target, detail }) {
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: detail })
-  target.addEventListener('app:http_request_stop', () => {
-    dispatch(target, 'app:sync')
+  target.addEventListener('http_request_stop', () => {
+    dispatch(target, 'sync')
     goTo('expenses')
   }, { once: true })
 }
@@ -174,7 +174,7 @@ export function checkPull ({ target, targetTouches, timeStamp }) {
       ]
 
       if (Math.abs(diffX) < 80 && diffY > 100) {
-        dispatch(event.target, 'app:pulldown')
+        dispatch(event.target, 'pulldown')
       }
     }
   }, { once: true })

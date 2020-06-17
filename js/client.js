@@ -71,7 +71,7 @@ export function sync (client) {
       client.setKey(detail.key)
     }
 
-    dispatch(target, 'app:http_request_start')
+    dispatch(target, 'http_request_start')
     client.getAllRemoteEvents().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))
     ).catch(err => {
@@ -80,7 +80,7 @@ export function sync (client) {
       } else {
         dispatch(target, 'app:syncerror', err.message)
       }
-    }).finally(() => dispatch(target, 'app:http_request_stop'))
+    }).finally(() => dispatch(target, 'http_request_stop'))
   }
 }
 
@@ -97,7 +97,7 @@ export function parseAndDispatch (client, target, payload) {
 
 export function postCommand (client) {
   return ({ target, detail }) => {
-    dispatch(target, 'app:http_request_start')
+    dispatch(target, 'http_request_start')
     client.postCommand(detail).then(body => {
       const { command, data } = validate(body)
       dispatch(target, `app:just_did_${command}`, data)
@@ -107,7 +107,7 @@ export function postCommand (client) {
       } else {
         dispatch(target, 'app:syncerror', err.message)
       }
-    }).finally(() => dispatch(target, 'app:http_request_stop'))
+    }).finally(() => dispatch(target, 'http_request_stop'))
   }
 }
 

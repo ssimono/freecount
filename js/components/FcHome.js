@@ -34,12 +34,12 @@ function onInitTripSubmit ({ target, detail }) {
 }
 
 function onPasswordChange ({ target }) {
-  dispatch(target, 'app:encryptionkeyupdate', deriveKey(target.value))
+  dispatch(target, 'encryptionkeyupdate', deriveKey(target.value))
 }
 
 function onPasswordToggle ({ target }) {
   if (!target.checked) {
-    dispatch(form, 'app:encryptionkeyupdate', null)
+    dispatch(form, 'encryptionkeyupdate', null)
   }
 }
 
