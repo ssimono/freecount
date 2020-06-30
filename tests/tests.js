@@ -1,11 +1,13 @@
 import { html, partition, _test as libTest } from '../js/lib.js'
 import { validate } from '../js/client.js'
+import { pretty } from '../js/handlers/utils.js'
 import { computeDebts } from '../js/handlers/balance.js'
 import testAttachRoutes from './testAttachRoutes.js'
 import testCrypto from './testCrypto.js'
 
 export default function () {
   suite('Events validation', testValidate)
+  suite('Money formatting', testPretty)
   suite('partition function', testPartition)
   suite('debt calculation', testComputeDebts)
   suite('HTML escape function', testHtml)
@@ -68,6 +70,30 @@ function testValidate () {
     assert.throws(() => validate({ command: 'init_trip', _createdOn: '2019', data: null }))
     assert.throws(() => validate({ command: 'init_trip', _createdOn: '2019', data: { name: '', currency: 'chf', members: [] } }))
     assert.throws(() => validate({ _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543,7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 1, _createdOn: '2019-12-22T23:13:29.784Z' }))
+  })
+}
+
+function testPretty () {
+  test('Formats currency', () => {
+    assert.equal(pretty(0), '€0.00')
+    assert.equal(pretty(0.1), '€0.10')
+    assert.equal(pretty(0.01), '€0.01')
+    assert.equal(pretty(0.001), '€0.00')
+    assert.equal(pretty(0.008), '€0.01')
+    assert.equal(pretty(4.99), '€4.99')
+    assert.equal(pretty(4.999), '€5.00')
+  })
+
+  test('Handles forced plus sign', () => {
+    assert.equal(pretty(0, true), '€0.00')
+    assert.equal(pretty(0.008, true), '+€0.01')
+    assert.equal(pretty(-0.008, true), '-€0.01')
+  })
+
+  test('Handles locales', () => {
+    assert.equal(pretty(0, false, 'de-DE'), '0,00\u00a0€')
+    assert.equal(pretty(0.008, true, 'de-DE'), '+0,01\u00a0€')
+    assert.equal(pretty(-0.008, true, 'de-DE'), '-0,01\u00a0€')
   })
 }
 

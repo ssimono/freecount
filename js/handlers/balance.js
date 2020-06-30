@@ -1,5 +1,5 @@
 import { dispatch, html, partition } from '../lib.js'
-import { pretty } from './utils.js'
+import { localPretty } from './utils.js'
 
 export function onNewExpense ({ detail }) {
   const balanceList = document.getElementById('balance_list')
@@ -67,7 +67,7 @@ function render (target, balances) {
     const className = balance >= 0 && 'positive' || 'negative'
     target.append(
       html`<dt class="${className}">${member}</dt>`,
-      html`<dd data-value="${balance}" style="--balance: ${parseInt(balance)}" class="${className}">${pretty(balance, true)}</dd>`
+      html`<dd data-value="${balance}" style="--balance: ${parseInt(balance)}" class="${className}">${localPretty(balance, true)}</dd>`
     )
     max = Math.max(max, balance)
   }
@@ -84,7 +84,7 @@ function renderDebts (target, debts) {
     const t = html`
     <li>
       <em>${debt.debtor}</em>
-      gives <strong><data value="${debt.amount}">${pretty(debt.amount)}</data></strong>
+      gives <strong><data value="${debt.amount}">${localPretty(debt.amount)}</data></strong>
       to <em>${debt.creditor}</em>
       <button title="Settle up" role="button">Settle up</button>
     </li>`

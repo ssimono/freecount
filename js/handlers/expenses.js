@@ -1,5 +1,5 @@
 import { dispatch, goTo, html } from '../lib.js'
-import { pretty } from './utils.js'
+import { localPretty } from './utils.js'
 
 export function onTripReady ({ target, detail }) {
   document.querySelector('h1').innerText = detail.name
@@ -89,7 +89,7 @@ export function toggleRefreshButton () {
 function expenseItem (expense) {
   return html`<li>
     <span class="title">${expense.title}</span>
-    <data class="amount" value="${expense.amount}">${pretty(expense.amount)}</data>
+    <data class="amount" value="${expense.amount}">${localPretty(expense.amount)}</data>
     <span class="creditor">paid by ${expense.creditor}</span>
     <time date="${expense.date}">${(new Date(expense.date)).toDateString().slice(0, -5)}</time>
   </li>`
