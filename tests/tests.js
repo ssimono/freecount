@@ -2,6 +2,7 @@ import { partition, _test as libTest } from '../js/lib.js'
 import { validate } from '../js/client.js'
 import { pretty } from '../js/handlers/utils.js'
 import { computeDebts } from '../js/handlers/balance.js'
+import { _test as expensesTest } from '../js/handlers/expenses.js'
 import testAttachRoutes from './testAttachRoutes.js'
 import testCrypto from './testCrypto.js'
 import testHtml from './testHtml.js'
@@ -11,6 +12,7 @@ export default function () {
   suite('Money formatting', testPretty)
   suite('partition function', testPartition)
   suite('debt calculation', testComputeDebts)
+  suite('participants list', testSmartList)
   suite('HTML escape function', testHtml)
   suite('Event routing system', () => {
     suite('parsing', testParseRoutes)
@@ -157,6 +159,36 @@ function testComputeDebts () {
       { creditor: 'Erik', debtor: 'Christopher', amount: 300 },
       { creditor: 'Thomas', debtor: 'Vasco', amount: 100 }
     ])
+  })
+}
+
+function testSmartList () {
+  const smartList = expensesTest.smartList
+  test('works as expected', () => {
+    assert.equal(
+      smartList(['A', 'B', 'C', 'D'], ['A', 'B', 'C', 'D']),
+      'everyone'
+    )
+
+    assert.equal(
+      smartList(['A'], ['A', 'B', 'C', 'D']),
+      'A'
+    )
+
+    assert.equal(
+      smartList(['A', 'B'], ['A', 'B', 'C', 'D']),
+      'A and B'
+    )
+
+    assert.equal(
+      smartList(['A', 'B', 'C'], ['A', 'B', 'C', 'D']),
+      'everyone but D'
+    )
+
+    assert.equal(
+      smartList(['A', 'B', 'C'], ['A', 'B', 'C', 'D', 'E', 'F']),
+      'A, B, and C'
+    )
   })
 }
 

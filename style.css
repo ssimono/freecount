@@ -185,16 +185,17 @@ footer button {
 .expense-list li {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto 1rem;
   grid-template-areas:
     "title title amount"
-    "creditor status date";
+    "description description date";
 }
 .expense-list .immediate:nth-child(n+2) {display: none;}
 .expense-list .title {grid-area: title;}
 .expense-list .amount {font-size: 1.2rem; grid-area: amount;}
 .expense-list time {grid-area: date;}
-.expense-list .creditor, .expense-list time {font-size: 0.8rem;}
+.expense-list .description {grid-area: description;}
+.expense-list .description, .expense-list time {font-size: 0.8rem;}
+.expense-list .participants.all { display: none; }
 .expense-list .amount, .expense-list time {justify-self: end;}
 .expense-list .local { background-color: var(--button);}
 .expense-list .placeholder {display: block; padding: 3rem;}
