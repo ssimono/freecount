@@ -14,4 +14,4 @@ It makes use of https://jsonbox.io/ to store the expenses.
 - **I am afraid my friends alter past expenses to screw me over.** Then you should use another tool, or change friends. Although Freecount is designed with immutable data in mind, jsonbox.io allows to DELETE or PUT past data via its API, meaning that immutability is not guaranteed.
 - **I want to self-host Freecount.** Please go ahead, it is a 100% static web app super easy to serve. GitHub pages would do the job.
 - **I want to self-host the data too.** It turns out [jsonbox](https://github.com/vasanthv/jsonbox) is also self-hostable, but right now the API endpoint is not configurable in Freecount. This would be easy to implement though, and pull requests are welcome.
-- **Which trendy js framework is Freecount written in?** The latest version of [Vanilla js](http://vanilla-js.com/). And there is not even a build pipeline, your browser will run the code as it was typed, like in 2010.
+- **Which trendy js framework is Freecount written in?** The latest version of [Vanilla js](http://vanilla-js.com/). And there is not even a build pipeline: your browser will run the code as it was typed, like in 2010.

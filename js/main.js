@@ -62,8 +62,12 @@ export default function main () {
     ['local:fetch', ({ target }) => {
       withStored('known_trips', {}, (trips) => {
         dispatch(target, 'local:knowntrips', trips)
-        if (trips[boxId]) {
-          dispatch(target, 'local:trip', trips[boxId])
+        const currentTrip = trips[boxId]
+        if (currentTrip) {
+          dispatch(target, 'local:trip', currentTrip)
+          if (currentTrip.key) {
+            client.setKey(currentTrip.key)
+          }
         }
       })
     }],

@@ -1,4 +1,4 @@
-const cacheKey = 'v7'
+const cacheKey = 'v8'
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()

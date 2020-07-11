@@ -36,6 +36,7 @@ export default class FcTrip extends HTMLElement {
     ], this)
 
     goTo('expenses')
+    dispatch(this, 'local:fetch')
     dispatch(this, 'sync')
   }
 }
@@ -121,6 +122,7 @@ function onUnauthorized ({ target }) {
 
 function onPasswordSubmit({currentTarget, detail }) {
   dispatch(currentTarget, 'sync', { key: detail })
+  dispatch(currentTarget, 'local:storetrip', trip => Object.assign({}, trip, { key: detail }))
 }
 
 function onAddExpenseFormOpen ({ target }) {
