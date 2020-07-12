@@ -35,7 +35,6 @@ export default class FcTrip extends HTMLElement {
       ['pulldown', ({ target }) => dispatch(target, 'sync')],
     ], this)
 
-    goTo('expenses')
     dispatch(this, 'local:fetch')
     dispatch(this, 'sync')
   }

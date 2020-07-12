@@ -4,13 +4,6 @@ import { localPretty } from './utils.js'
 export function onInitTrip (target, detail) {
   target.classList.add('ready')
   target._members = detail.members
-
-  // Hide the explicit refresh if the touch events are enabled
-  if (navigator.maxTouchPoints > 0) {
-    const button = document.getElementById('refresh_button')
-    button.parentNode.removeChild(button)
-  }
-
 }
 
 export function onFirstExpense (target) {

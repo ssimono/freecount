@@ -16,20 +16,23 @@ self.addEventListener('fetch', event => {
   const strategy = request => {
     const url = new URL(request.url)
 
-    if (url.pathname.match(/^\/worker/)) {
-      return controlWorker(request, url.pathname)
-    } else if (request.method === 'POST') {
-      return fetch(request)
-    } else if (url.host === self.location.host || url.host === 'dev.jspm.io') {
+    if (url.host === self.location.host || url.host === 'dev.jspm.io') {
       return cacheFirst(request)
-    } else {
+    } else if (request.headers.get('X-Requested-With') === 'fc-client') {
       return fetchEvents(event)
+    } else if (url.pathname.match(/^\/worker/)) {
+      return controlWorker(request, url.pathname)
+    } else {
+      return fetch(request)
     }
   }
 
   event.respondWith(strategy(event.request).catch(e => {
     console.error(`Error when handling request: ${e}`)
-    return new Response(JSON.stringify({ error: e.message }))
+    return new Response(
+      JSON.stringify({ error: e.message }),
+      { status: 500, headers: new Headers({ 'Content-Type': 'application/json' }) }
+    )
   }))
 })
 

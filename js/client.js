@@ -20,17 +20,16 @@ export default class JsonBoxClient {
     this.key = hexKey ? toBytes(hexKey) : null
   }
 
-  async getAllRemoteEvents () {
+  async pull () {
     const events = []
     let newEvents = []
     do {
       newEvents = await fetchEventChunk(this.endpoint, this.boxId, this.offset)
-
       if (this.offset === 0 && newEvents.length && !this.key) {
         // infering whether the content is encrypted or not
         const firstEvent = newEvents[0]
         if ('cipher' in firstEvent) {
-          return [{ ...firstEvent, command: 'unauthorized', version: COMMAND_VERSION, data: {} }]
+          return [{ command: 'unauthorized', version: COMMAND_VERSION, data: {} }]
         }
       }
 
@@ -50,7 +49,10 @@ export default class JsonBoxClient {
 
     return http(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'fc-client'
+      },
       body: JSON.stringify(encryptFn({ ...command, version: COMMAND_VERSION }))
     }).then(decryptFn)
   }
@@ -61,7 +63,13 @@ class ForbiddenError extends Error {}
 async function fetchEventChunk (endpoint, boxId, offset) {
   return http(
     `${endpoint}/${boxId}?sort=_createdOn&limit=${CHUNK_SIZE}&skip=${offset}`,
-    null
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'fc-client',
+        'X-Fc-Offset': `${offset}`
+      }
+    }
   )
 }
 
@@ -72,7 +80,7 @@ export function sync (client) {
     }
 
     dispatch(target, 'http_request_start')
-    client.getAllRemoteEvents().then(events =>
+    client.pull().then(events =>
       events.forEach(payload => parseAndDispatch(client, target, payload))
     ).catch(err => {
       if (err instanceof ForbiddenError) {
