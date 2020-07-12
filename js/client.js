@@ -37,7 +37,7 @@ export default class JsonBoxClient {
 
       events.push(...newEvents.map(decryptFn))
       this.offset += newEvents.length
-    } while (newEvents.length >= CHUNK_SIZE)
+    } while (newEvents.length >= Math.min(this.offset, CHUNK_SIZE))
 
     return events
   }

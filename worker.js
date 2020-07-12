@@ -1,27 +1,23 @@
 const cacheKey = 'v9'
 
-self.addEventListener('install', (event) => {
-  self.skipWaiting()
-})
+self.addEventListener('install', () => self.skipWaiting())
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event =>
   event.waitUntil(
     caches.keys().then(keyList => {
       return Promise.all(keyList.filter(key => key !== cacheKey).map(key => caches.delete(key)))
     })
   )
-})
+)
 
 self.addEventListener('fetch', event => {
   const strategy = request => {
     const url = new URL(request.url)
 
-    if (url.host === self.location.host || url.host === 'dev.jspm.io') {
+    if (request.headers.get('X-Requested-With') === 'fc-client') {
+      return manageCommands(event)
+    } else if (url.host === self.location.host || url.host === 'dev.jspm.io') {
       return cacheFirst(request)
-    } else if (request.headers.get('X-Requested-With') === 'fc-client') {
-      return fetchEvents(event)
-    } else if (url.pathname.match(/^\/worker/)) {
-      return controlWorker(request, url.pathname)
     } else {
       return fetch(request)
     }
@@ -49,46 +45,69 @@ async function cacheFirst (request) {
   return cached || fetchAndCache(request)
 }
 
-async function fetchEvents ({ request, clientId }) {
-  const cached = await caches.match(request)
-
-  if (cached) {
-    // Asynchronously check for more data
-    checkAndRefresh(request.clone(), cached.clone(), clientId)
+async function manageCommands ({ request, clientId }) {
+  if (request.method === 'GET') {
+    return managePull(request)
+  } else if (request.method === 'POST') {
+    return fetchOrCache(request)
   } else {
-    return fetchAndCache(request, cached, clientId)
+    return fetch(request)
   }
-
-  return cached
 }
 
-async function checkAndRefresh (request, cached, clientId) {
-  const cachedEvents = await cached.json()
-  const response = await fetch(request)
-  const freshEvents = await response.clone().json()
+async function managePull (request) {
+  const url = new URL(request.url)
+  const cachedCommandsKey = `${self.location.origin}${url.pathname}`
+  const clientOffset = request.headers.has('X-Fc-Offset')
+    ? parseInt(request.headers.get('X-Fc-Offset'))
+    : null
 
-  if (freshEvents.length === cachedEvents.length) {
-    return
-  }
+  if (clientOffset === 0) {
+    const cached = await caches.match(cachedCommandsKey)
 
-  const cache = await caches.open(cacheKey)
-  await cache.put(request, response)
-  const client = await clients.get(clientId)
-
-  if (client) {
-    const newEvents = freshEvents.slice(cachedEvents.length)
-    for (const evt of newEvents) {
-      client.postMessage(evt)
+    if (cached) {
+      return url.href === cachedCommandsKey
+        ? cached
+        : new Response(null, {
+          status: 302,
+          statusText: 'Found',
+          headers: new Headers({ Location: cachedCommandsKey })
+        })
     }
   }
+
+  const response = await fetch(request)
+
+  if (!response.ok) {
+    throw new Error(`Network Error when fetching ${url.href}`)
+  }
+
+  const responsePayload = await response.clone().json()
+
+  if (responsePayload.length) {
+    updateJsonCache(cachedCommandsKey, [], commands =>
+      commands.length === clientOffset
+        ? [].concat(commands, responsePayload)
+        : commands
+    )
+  }
+
+  return response
 }
 
-async function controlWorker (request, pathname) {
-  switch (pathname) {
-    case '/worker/clear-cache':
-      await caches.delete(cacheKey)
-      return new Response('OK')
-    default:
-      return new Response('Not found', { status: 404, statusText: 'Not found' })
-  }
+
+async function jsonCache (key, default_) {
+  const cache = await caches.open(cacheKey)
+  const cached = await cache.match(key)
+  return cached === undefined ? default_ : cached.json()
+}
+
+async function updateJsonCache (key, default_, fn) {
+  const cache = await caches.open(cacheKey)
+  const cachedBody = await jsonCache(key, default_)
+
+  return cache.put(key, new Response(JSON.stringify(fn(cachedBody))), {
+    status: 203,
+    headers: new Headers({ Via: 'Service Worker', 'Content-Type': 'application/json' })
+  })
 }

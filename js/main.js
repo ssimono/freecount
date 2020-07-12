@@ -122,9 +122,7 @@ function registerSW (client) {
     .then(reg => {
       reg.onupdatefound = () => {
         if (localStorage.key(0)) {
-          fetch('/worker/clear-cache', { method: 'POST' }).then(() => {
-            dispatch(document.body, 'workerupdate', null)
-          })
+          dispatch(document.body, 'workerupdate', null)
         }
       }
       console.info('Service Worker registered… Offline support active')
