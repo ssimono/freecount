@@ -1,4 +1,4 @@
-import { dispatch, html, partition, raw } from '../lib.js'
+import { dispatch, generateId, goTo, html, partition, raw } from '../lib.js'
 import { localPretty } from './utils.js'
 
 export function onInitTrip (target, detail) {
@@ -36,14 +36,17 @@ export function onNewExpense (target, expense) {
 
 export function onSettleUpClick ({ target, detail }) {
   const settlement = {
+    id: generateId(16),
     amount: detail.amount,
     date: (new Date()).toISOString().substr(0, 10),
     creditor: detail.debtor,
     participants: [ detail.creditor ],
-    title: "Settlement"
+    title: "⚖ Settlement"
   }
+  target.addEventListener('http_request_stop', () => {
+    dispatch(target, 'sync')
+  }, { once: true })
   dispatch(target, 'app:postcommand', { command: 'add_expense', data: settlement })
-  target.addEventListener('http_request_stop', () => dispatch(target, 'sync'))
 }
 
 function getBalanceMap (target) {

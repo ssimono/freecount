@@ -1,6 +1,6 @@
 import { decrypt, dispatch, encrypt, fromBytes, toBytes } from './lib.js'
+import { validate, COMMAND_VERSION } from './validation.js'
 
-const COMMAND_VERSION = 1
 const CHUNK_SIZE = 100
 
 const identity = x => x
@@ -146,42 +146,4 @@ function decryptMessage (key, message) {
 function encryptMessage (key, message) {
   const payload = JSON.stringify(message)
   return { cipher: encrypt(key, payload) }
-}
-
-export function validate (payload) {
-  const assert = function (predicate, message = '') {
-    if (!predicate) throw new Error(`Invalid command: ${JSON.stringify(payload)}: ${message}`)
-  }
-
-  const assertHas = function (obj, ...props) {
-    const current = Object.getOwnPropertyNames(obj)
-    for (const prop of props) {
-      assert(current.indexOf(prop) >= 0, `Missing property: ${prop}`)
-    }
-  }
-
-  assertHas(payload, 'command', 'version', 'data', '_createdOn')
-  assert(payload.version === COMMAND_VERSION, 'invalid or unsupported version')
-  assert(
-    ['init_trip', 'add_expense', 'unauthorized'].indexOf(payload.command) !== -1,
-    `unknown command ${payload.command}`
-  )
-
-  const { command, data } = payload
-
-  switch (command) {
-    case 'init_trip':
-      assertHas(data, 'members', 'name', 'currency')
-      assert(data.members.length, 'missing members')
-      assert(data.name.length, 'invalid name')
-      assert(data.currency.length === 3, 'invalid currency')
-      break
-    case 'add_expense':
-      assertHas(data, 'creditor', 'participants', 'amount', 'date')
-      assert(!Number.isNaN(Number(data.amount)))
-      assert((new Date(data.date)) instanceof Date, `invalid date: ${data.date}`)
-      break
-  }
-
-  return { command, data }
 }

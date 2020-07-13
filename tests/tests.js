@@ -1,5 +1,5 @@
 import { partition, _test as libTest } from '../js/lib.js'
-import { validate } from '../js/client.js'
+import { validate } from '../js/validation.js'
 import { pretty } from '../js/handlers/utils.js'
 import { computeDebts } from '../js/handlers/balance.js'
 import { _test as expensesTest } from '../js/handlers/expenses.js'
@@ -22,6 +22,37 @@ export default function () {
   suite('Kebab', testKebab)
 
   mocha.run()
+}
+
+function testValidate () {
+  test('allows valid events', () => {
+    assert(validate(
+      { _id: '5dfe9cfa4c88c20017b0da51', command: 'init_trip', data: { name: 'Vacation Spain', currency: 'EUR', members: ['Chuck', 'Jacky', 'Bruce'] }, version: 1 }, { _id: '5dff4ec789e555001711a1b2', command: 'add_expense', data: { title: 'First spend', amount: '32', creditor: 'Simon', participants: ['Simon', 'Pauline', 'Vincent'], date: '2019-12-22', currency: 'EUR' }, version: 2 }
+    ))
+    assert(validate(
+      { _id: '5dfff89989e555001711a344', command: 'add_expense', data: { id: 'abcd', title: 'Hello', amount: '543.7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 2 }
+    ))
+  })
+
+  test('allows valid V1 events', () => {
+    assert(validate(
+      { _id: '5dfe9cfa4c88c20017b0da51', command: 'init_trip', data: { name: 'Vacation Spain', currency: 'EUR', members: ['Chuck', 'Jacky', 'Bruce'] }, version: 1 }, { _id: '5dff4ec789e555001711a1b2', command: 'add_expense', data: { title: 'First spend', amount: '32', creditor: 'Simon', participants: ['Simon', 'Pauline', 'Vincent'], date: '2019-12-22', currency: 'EUR' }, version: 1 }
+    ))
+    assert(validate(
+      { _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543.7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 1 }
+    ))
+  })
+
+  test('disallows invalid events', () => {
+    assert.throws(() => validate({}))
+    assert.throws(() => validate({ command: 'unknown' }))
+    assert.throws(() => validate({ command: 'init_trip', version: 4 }))
+    assert.throws(() => validate({ command: 'init_trip', version: 1 }))
+    assert.throws(() => validate({ command: 'init_trip', data: null }))
+    assert.throws(() => validate({ command: 'init_trip', data: { name: '', currency: 'chf', members: [] } }))
+    assert.throws(() => validate({ _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543,7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 1 })) // bad number format
+    assert.throws(() => validate({ _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543.7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 2 })) // missing id
+  })
 }
 
 function testParseRoutes () {
@@ -53,26 +84,6 @@ function testParseRoutes () {
     assert.equal(routes[3].eventType, 'click')
     assert.equal(routes[3].selector, 'form.active')
     assert.equal(routes[3].delegatedSelector, 'button')
-  })
-}
-
-function testValidate () {
-  test('allow valid events', () => {
-    assert(validate(
-      { _id: '5dfe9cfa4c88c20017b0da51', command: 'init_trip', data: { name: 'Vacation Spain', currency: 'EUR', members: ['Chuck', 'Jacky', 'Bruce'] }, version: 1, _createdOn: '2019-12-21T22:30:18.724Z' }, { _id: '5dff4ec789e555001711a1b2', command: 'add_expense', data: { title: 'First spend', amount: '32', creditor: 'Simon', participants: ['Simon', 'Pauline', 'Vincent'], date: '2019-12-22', currency: 'EUR' }, version: 1, _createdOn: '2019-12-22T11:08:55.440Z' }
-    ))
-    assert(validate(
-      { _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543.7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 1, _createdOn: '2019-12-22T23:13:29.784Z' }
-    ))
-  })
-
-  test('disallow invalid events', () => {
-    assert.throws(() => validate({}))
-    assert.throws(() => validate({ command: 'unknown' }))
-    assert.throws(() => validate({ command: 'init_trip', version: 4 }))
-    assert.throws(() => validate({ command: 'init_trip', _createdOn: '2019', data: null }))
-    assert.throws(() => validate({ command: 'init_trip', _createdOn: '2019', data: { name: '', currency: 'chf', members: [] } }))
-    assert.throws(() => validate({ _id: '5dfff89989e555001711a344', command: 'add_expense', data: { title: 'Hello', amount: '543,7', creditor: 'Chuck', participants: ['Chuck', 'Bruce'], date: '2019-12-22', currency: 'EUR' }, version: 1, _createdOn: '2019-12-22T23:13:29.784Z' }))
   })
 }
 

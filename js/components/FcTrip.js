@@ -8,12 +8,10 @@ import {
 } from '../handlers/balance.js'
 
 import {
-  clearLocal,
   onInitTrip as onInitTripExpenses,
   onNewExpense as listOnNewExpense,
   onFirstExpense,
-  onImmediateNewExpense,
-  onLocalNewExpense
+  onImmediateNewExpense
 } from '../handlers/expenses.js'
 
 export default class FcTrip extends HTMLElement {
@@ -25,13 +23,11 @@ export default class FcTrip extends HTMLElement {
       ['app:did_init_trip', onInitTrip],
       ['app:did_add_expense', onNewExpense],
       ['app:just_did_add_expense', withIdTarget('expense_list', onImmediateNewExpense)],
-      ['app:failed_to_add_expense', withIdTarget('expense_list', onLocalNewExpense)],
       ['app:did_unauthorized', onUnauthorized],
       ['settle_up', onSettleUpClick],
       ['navigate -> [path="add_expense"]', onAddExpenseFormOpen],
       ['jsonsubmit -> [name="add_expense"]', onAddExpenseFormSubmit],
       ['jsonsubmit -> [name="password_input"]', onPasswordSubmit],
-      ['sync', clearLocal],
       ['pulldown', ({ target }) => dispatch(target, 'sync')],
     ], this)
 

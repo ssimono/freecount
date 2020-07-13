@@ -6,42 +6,32 @@ export function onInitTrip (target, detail) {
   target._members = detail.members
 }
 
-export function onFirstExpense (target) {
-  const placeholder = target.querySelector('.placeholder')
+export function onFirstExpense (list) {
+  const placeholder = list.querySelector('.placeholder')
   placeholder.parentNode.removeChild(placeholder)
 }
 
-export function onNewExpense (target, expense) {
-  target.prepend(expenseItem(expense, target._members))
-}
-
-export function onImmediateNewExpense (list, detail) {
-  const newItem = expenseItem(detail, target._members)
-  newItem.classList.add('immediate')
-  list.prepend(newItem)
-}
-
-export function onLocalNewExpense (list, detail) {
-  const newItem = expenseItem(detail, target._members)
-  newItem.classList.add('local')
-  list.prepend(newItem)
-}
-
-export function clearLocal () {
-  const localExpenses = document.querySelectorAll('#expense_list .local')
-  if (!localExpenses) {
-    return
-  }
-
-  for (const local of localExpenses) {
-    local.parentNode.removeChild(local)
+export function onNewExpense (list, expense) {
+  list.prepend(expenseItem(expense, list._members))
+  if (list._altered) {
+    const temp = document.getElementById(`immediate_${expense.id}`)
+    if (temp) {
+      list.removeChild(temp)
+    }
   }
 }
 
-function expenseItem (expense, members) {
+export function onImmediateNewExpense (list, expense) {
+  list.prepend(expenseItem(expense, list._members, 'immediate'))
+  list._altered = true
+}
+
+function expenseItem (expense, members, flag = '') {
   const isForAll = expense.participants.length === members.length
+  const class_ = 'expense-item' + (flag && ` ${flag}` || '')
+  const id = `${flag || 'expense'}_${expense.id}`
 
-  return html`<li>
+  return html`<li id="${id}" class="${class_}">
     <span class="title">${expense.title}</span>
     <data class="amount" value="${expense.amount}">${localPretty(expense.amount)}</data>
     <span class="description">

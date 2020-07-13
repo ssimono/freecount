@@ -1,4 +1,4 @@
-import { dispatch, goTo, html } from '../lib.js'
+import { dispatch, generateId, goTo, html } from '../lib.js'
 
 export default function AddExpenseForm (members) {
   const form = html`
@@ -64,5 +64,6 @@ function validate (newExpense) {
 }
 
 function format (newExpense) {
-  return Object.assign({}, newExpense, { amount: Number(newExpense.amount) })
+  const id = generateId(16)
+  return Object.assign({id}, newExpense, { amount: Number(newExpense.amount) })
 }

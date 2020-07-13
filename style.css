@@ -47,7 +47,7 @@ button,input[type="submit"] {
   padding: 0.3rem;
 }
 
-.loading input[type="submit"] {
+.loading input[type="submit"], .loading button:focus {
   --button-light: #fcdbaa;
   background-image: linear-gradient(
     45deg,
@@ -189,7 +189,8 @@ footer button {
     "title title amount"
     "description description date";
 }
-.expense-list .immediate:nth-child(n+2) {display: none;}
+
+.expense-list .immediate {opacity: 80%;}
 .expense-list .title {grid-area: title;}
 .expense-list .amount {font-size: 1.2rem; grid-area: amount;}
 .expense-list time {grid-area: date;}
