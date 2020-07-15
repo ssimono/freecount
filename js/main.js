@@ -1,5 +1,5 @@
 import { attachRoutes, dispatch, generateId, goTo, html, setupComponents } from './lib.js'
-import Client, { sync, postCommand, parseAndDispatch } from './client.js'
+import Client, { sync, postCommand } from './client.js'
 import components from './components/index.js'
 import { showNotification } from './components/notify.js'
 
@@ -19,9 +19,8 @@ const routes = [
   }],
 
   // Generic interaction helpers
-  ['app:syncerror', ({ detail }) => alert(detail)],
-  ['http_request_start', ({ currentTarget }) => currentTarget.classList.add('loading')],
-  ['http_request_stop', ({ currentTarget }) => currentTarget.classList.remove('loading')],
+  ['http_request_start', () => document.body.classList.add('loading')],
+  ['http_request_stop', () => document.body.classList.remove('loading')],
 
   // App logic
   ['workerupdate', () => {
@@ -50,6 +49,7 @@ export default function main () {
   // Add statefull listeners
   attachRoutes([
     ['sync', sync(client)],
+    ['app:syncerror', ({ detail }) => alert(detail)],
     ['app:postcommand', postCommand(client)],
     ['app:just_did_init_trip', () => {
       const newUrl = new URL(window.location.href)
@@ -90,21 +90,6 @@ export default function main () {
           return Object.assign({}, knownTrips, { [boxId]: { ...content, key: detail } })
         }
       })
-    }],
-    ['app:posterror', ({ target, detail }) => {
-      const payload = detail.payload
-      persist(`${boxId}_commands`, [], commands => [].concat(commands, payload))
-      dispatch(target, `app:failed_to_${payload.command}`, payload.data)
-    }],
-    ['sync', ({ target, detail }) => {
-      persist(`${boxId}_commands`, [], commands => {
-        if (commands.length) {
-          target.addEventListener('http_request_stop', () => {
-            commands.forEach(c => postCommand(client)({ target, detail: c }))
-          }, { once: true })
-        }
-        return []
-      })
     }]
   ], document.body)
 
@@ -125,15 +110,12 @@ function registerSW (client) {
           dispatch(document.body, 'workerupdate', null)
         }
       }
+      client.hasWorker = true
       console.info('Service Worker registered… Offline support active')
     })
     .catch((error) => {
       console.error(`Registration failed with ${error}`)
     })
-
-  navigator.serviceWorker.addEventListener('message', event => {
-    parseAndDispatch(client, document.body, event.data) && client.offset++
-  })
 }
 
 function withStored (storageKey, default_, fn) {

@@ -190,7 +190,9 @@ footer button {
     "description description date";
 }
 
-.expense-list .immediate {opacity: 80%;}
+.expense-list .immediate {opacity: 70%;}
+.expense-list .unsynced {background-color: orange;}
+.loading .expense-list .unsynced {opacity: 70%;}
 .expense-list .title {grid-area: title;}
 .expense-list .amount {font-size: 1.2rem; grid-area: amount;}
 .expense-list time {grid-area: date;}

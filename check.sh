@@ -23,6 +23,6 @@ standard --env browser js/**
 standard --env serviceworker worker.js
 
 git diff --cached --word-diff=plain --no-color -- worker.js \
-  | grep -qP '^const cacheKey =' || (echo 'Please update cacheKey in worker.js — Aborting' && false)
+  | grep -qP '^const CACHE_KEY =' || (echo 'Please update CACHE_KEY in worker.js — Aborting' && false)
 
 echo all good!

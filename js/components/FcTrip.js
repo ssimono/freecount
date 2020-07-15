@@ -11,7 +11,8 @@ import {
   onInitTrip as onInitTripExpenses,
   onNewExpense as listOnNewExpense,
   onFirstExpense,
-  onImmediateNewExpense
+  onImmediateNewExpense,
+  onUnsyncedNewExpense,
 } from '../handlers/expenses.js'
 
 export default class FcTrip extends HTMLElement {
@@ -23,7 +24,9 @@ export default class FcTrip extends HTMLElement {
       ['app:did_init_trip', onInitTrip],
       ['app:did_add_expense', onNewExpense],
       ['app:just_did_add_expense', withIdTarget('expense_list', onImmediateNewExpense)],
+      ['app:unsynced_add_expense', withIdTarget('expense_list', onUnsyncedNewExpense)],
       ['app:did_unauthorized', onUnauthorized],
+      ['synced', onSynced],
       ['settle_up', onSettleUpClick],
       ['navigate -> [path="add_expense"]', onAddExpenseFormOpen],
       ['jsonsubmit -> [name="add_expense"]', onAddExpenseFormSubmit],
@@ -139,6 +142,15 @@ function onAddExpenseFormSubmit ({ target, detail }) {
     dispatch(target, 'sync')
     goTo('expenses')
   }, { once: true })
+}
+
+function onSynced({currentTarget}) {
+  for (let li of currentTarget.querySelectorAll('.expense-item.unsynced')) {
+    dispatch(currentTarget, 'app:postcommand', {
+      command: 'add_expense',
+      data: li.expense
+    })
+  }
 }
 
 function withIdTarget (id, handler) {

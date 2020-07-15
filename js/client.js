@@ -10,6 +10,7 @@ export default class JsonBoxClient {
     this.boxId = boxId
     this.endpoint = endpoint
     this.offset = 0
+    this.hasWorker = false
   }
 
   getKey () {
@@ -21,23 +22,28 @@ export default class JsonBoxClient {
   }
 
   async pull () {
+    const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
     const events = []
-    let newEvents = []
-    do {
-      newEvents = await fetchEventChunk(this.endpoint, this.boxId, this.offset)
-      if (this.offset === 0 && newEvents.length && !this.key) {
+
+    while (true) {
+      const { cached, body } = await fetchEventChunk(this.endpoint, this.boxId, this.offset)
+
+      if (body.length) {
         // infering whether the content is encrypted or not
-        const firstEvent = newEvents[0]
-        if ('cipher' in firstEvent) {
+        if (!this.key && ('cipher' in body[0])) {
           return [{ command: 'unauthorized', version: COMMAND_VERSION, data: {} }]
         }
+
+        this.offset += body.length
+        events.push(...body.map(decryptFn))
       }
 
-      const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
+      if (body.length >= CHUNK_SIZE || cached) {
+        continue
+      }
 
-      events.push(...newEvents.map(decryptFn))
-      this.offset += newEvents.length
-    } while (newEvents.length >= Math.min(this.offset, CHUNK_SIZE))
+      break
+    }
 
     return events
   }
@@ -54,7 +60,24 @@ export default class JsonBoxClient {
         'X-Requested-With': 'fc-client'
       },
       body: JSON.stringify(encryptFn({ ...command, version: COMMAND_VERSION }))
+    }).then(response => {
+      if (response.ok) return response.body
+      else throw response
     }).then(decryptFn)
+  }
+
+  async getUnsynced () {
+    if (!this.hasWorker) return Promise.resolve([])
+
+    const decryptFn = this.key ? decryptMessage.bind(null, this.key) : identity
+    return http(
+      `/unsynced/${this.boxId}`,
+      { headers: { 'X-Requested-With': 'fc-client' } }
+    )
+      .then(response => response.ok
+        ? response.body.map(decryptFn)
+        : []
+      )
   }
 }
 
@@ -70,7 +93,14 @@ async function fetchEventChunk (endpoint, boxId, offset) {
         'X-Fc-Offset': `${offset}`
       }
     }
-  )
+  ).then((response) => {
+    if (response.offline) {
+      return { body: [] }
+    } else if (!response.ok) {
+      throw response.body
+    }
+    return response
+  })
 }
 
 export function sync (client) {
@@ -80,9 +110,14 @@ export function sync (client) {
     }
 
     dispatch(target, 'http_request_start')
-    client.pull().then(events =>
-      events.forEach(payload => parseAndDispatch(client, target, payload))
-    ).catch(err => {
+
+    client.pull().then(events => {
+      events.forEach(parseAndDispatch.bind(null, target, 'did'))
+      return client.getUnsynced().then(unsynced => {
+        unsynced.forEach(parseAndDispatch.bind(null, target, 'unsynced'))
+        dispatch(target, 'synced')
+      })
+    }).catch(err => {
       if (err instanceof ForbiddenError) {
         dispatch(target, 'app:forbidden', err.message)
       } else {
@@ -92,10 +127,10 @@ export function sync (client) {
   }
 }
 
-export function parseAndDispatch (client, target, payload) {
+export function parseAndDispatch (target, prefix, payload) {
   try {
     const { command, data } = validate(payload)
-    dispatch(target, `app:did_${command}`, data)
+    dispatch(target, `app:${prefix}_${command}`, data)
     return true
   } catch (e) {
     console.error(e)
@@ -106,31 +141,41 @@ export function parseAndDispatch (client, target, payload) {
 export function postCommand (client) {
   return ({ target, detail }) => {
     dispatch(target, 'http_request_start')
-    client.postCommand(detail).then(body => {
-      const { command, data } = validate(body)
-      dispatch(target, `app:just_did_${command}`, data)
-    }).catch(err => {
-      if (err.message.indexOf('NetworkError') !== -1) {
-        dispatch(target, 'app:posterror', { err, payload: detail })
-      } else {
-        dispatch(target, 'app:syncerror', err.message)
-      }
-    }).finally(() => dispatch(target, 'http_request_stop'))
+    client
+      .postCommand(detail)
+      .then(parseAndDispatch.bind(null, target, 'just_did'))
+      .catch(err => {
+        if (err.offline) {
+          dispatch(target, 'app:posterror')
+        } else {
+          dispatch(target, 'app:syncerror', err)
+        }
+      })
+      .finally(() => dispatch(target, 'http_request_stop'))
   }
 }
 
-async function http (url, req) {
-  const response = await fetch(url, req)
-  const status = response.status
+async function withBody (response, result = {}) {
+  const content = response.headers.get('Content-Type') || ''
+  const body = content.indexOf('application/json') === 0
+    ? await response.json()
+    : await response.text()
 
-  if (status >= 200 && status < 400) {
-    return response.json()
-  } else if (status >= 400 && status < 500) {
-    const json = await response.json()
-    throw new Error(`Got error ${status}: ${json.message}`)
-  } else {
-    console.error(response)
-    throw new Error(`Got error ${status}`)
+  return Object.assign({}, result, { body })
+}
+
+async function http (url, req) {
+  try {
+    const response = await fetch(url, req)
+    const status = parseInt(response.status)
+
+    return withBody(response, {
+      ok: response.ok,
+      cached: status === 203,
+      offline: status === 503
+    })
+  } catch (error) {
+    return withBody(error, { ok: false })
   }
 }
 
