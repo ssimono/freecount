@@ -134,14 +134,16 @@ function testPartition () {
 function testComputeDebts () {
   test('accurately computes reimbursment strategy (creditor majority)', () => {
     const balances = new Map([
-      ['Marco', 30.23],
-      ['Christopher', 990.93],
-      ['Thomas', -1021.17]
+      ['Marco', 30.5],
+      ['Christopher', 990],
+      ['Thomas', -1017],
+      ['Erik', -3.5]
     ])
 
     assert.sameDeepMembers(computeDebts(balances), [
-      { creditor: 'Christopher', debtor: 'Thomas', amount: 990.93 },
-      { creditor: 'Marco', debtor: 'Thomas', amount: 30.23 }
+      { creditor: 'Christopher', debtor: 'Thomas', amount: 990 },
+      { creditor: 'Marco', debtor: 'Thomas', amount: 27 },
+      { creditor: 'Marco', debtor: 'Erik', amount: 3.5 }
     ])
   })
 

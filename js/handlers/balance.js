@@ -124,7 +124,7 @@ export function computeDebts (balances) {
     if (credit < debt) {
       debts.push({ creditor, debtor, amount: credit })
       creditors.shift()
-      debtors[0][1] += credit
+      debtors[0][1] -= credit
     } else if (credit > debt) {
       debts.push({ creditor, debtor, amount: debt })
       debtors.shift()
