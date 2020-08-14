@@ -1,4 +1,4 @@
-import html, { fragment, raw } from '../js/html.js'
+import html, { fragment, prop, raw } from '../js/html.js'
 
 export default function testHtml () {
   test('safely creates nested DOM Elements', () => {
@@ -64,5 +64,14 @@ export default function testHtml () {
     const frag = fragment`<header>Hello head</header>${main}`
     assert.isTrue(frag instanceof DocumentFragment)
     assert.equal(frag.children.length, 2)
+  })
+
+  test('can handle non-DOM attributes', () => {
+    const div = html`<div a="a" b="${[1, 2, 3]}" c=${prop([1, 2, 3])} />`
+    assert.equal(div.getAttribute('a'), 'a')
+    assert.equal(div.getAttribute('b'), '1,2,3')
+    assert.equal(div.getAttribute('c'), undefined)
+    assert.isFalse(div.hasAttribute('c'))
+    assert.deepEqual(div.c, [1, 2, 3])
   })
 }

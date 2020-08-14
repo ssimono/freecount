@@ -1,6 +1,6 @@
 import aesjs from 'https://dev.jspm.io/npm:aes-js@3.1.2/index.js'
 import fastSha from 'https://dev.jspm.io/npm:fast-sha256@1.3.0/sha256.min.js'
-export { default as html, fragment, raw } from './html.js'
+export { default as html, fragment, prop, raw } from './html.js'
 
 // Do not change this, unless you are self-hosting Freecount and do not want the
 // data to be readable from another "instance"

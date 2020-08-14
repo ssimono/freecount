@@ -24,6 +24,10 @@ function Raw (content) {
   this.content = content
 }
 
+function Prop (content) {
+  this.content = content
+}
+
 function _html (singleChild, parts, args) {
   const randomPrefix = btoa(Math.random()).replace(/^\d+/, '').substring(0, 8)
   const placeholderPattern = RegExp(`${randomPrefix}:(\\d+)`)
@@ -84,6 +88,7 @@ function _html (singleChild, parts, args) {
       for (const attr of node.attributes) {
         const name = attr.name
         const match = attr.value.match(placeholderPattern)
+        const full = match && match[0] === match.input.trim()
 
         if (!match) continue
 
@@ -91,9 +96,11 @@ function _html (singleChild, parts, args) {
           throw new Error('forbidden dynamic interpolation in \'javascript:\' urls')
         } else if (name === 'style') {
           throw new Error('setting dynamic style property is not supported for now')
+        } else if (full && (args[match[1]] instanceof Prop)) {
+          node[name] = args[match[1]].content
+          node.removeAttribute(name)
+          replaced++
         } else if (name.match(/^on\w+/i)) {
-          const full = match[0] === match.input.trim()
-
           if (!full || typeof args[match[1]] !== 'function') {
             throw new Error('forbidden dynamic interpolation in listener attribute')
           }
@@ -128,4 +135,8 @@ export function fragment (parts, ...args) {
 
 export function raw (content) {
   return new Raw(content)
+}
+
+export function prop (content) {
+  return new Prop(content)
 }
