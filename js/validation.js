@@ -14,7 +14,7 @@ export function validate (payload) {
 
   _assert(payload.version === COMMAND_VERSION, 'invalid or unsupported version')
   _assert(
-    ['init_trip', 'add_expense', 'unauthorized'].indexOf(payload.command) !== -1,
+    ['init_trip', 'add_expense', 'unauthorized', 'empty'].indexOf(payload.command) !== -1,
     `unknown command ${payload.command}`
   )
 

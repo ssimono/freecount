@@ -26,6 +26,7 @@ export default class FcTrip extends HTMLElement {
       ['app:just_did_add_expense', withIdTarget('expense_list', onImmediateNewExpense)],
       ['app:unsynced_add_expense', withIdTarget('expense_list', onUnsyncedNewExpense)],
       ['app:did_unauthorized', onUnauthorized],
+      ['app:did_empty', onEmpty],
       ['synced', onSynced],
       ['settle_up', onSettleUpClick],
       ['navigate -> [path="add_expense"]', onAddExpenseFormOpen],
@@ -116,6 +117,15 @@ function onUnauthorized ({ target }) {
   target.append(input)
   target.addEventListener('app:did_init_trip', () => input.remove(), {once: true})
   goTo('password_input')
+}
+
+function onEmpty ({ target }) {
+  target.append(html`
+    <hgroup class="full-width">
+      <h2>There is nothing here</h2>
+      <h3>If you had a Freecount at that address, it might have been cleaned after 30 days of inactivity</h3>
+    </hgroup>
+  `)
 }
 
 function onPasswordSubmit({currentTarget, detail }) {

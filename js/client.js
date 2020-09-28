@@ -36,6 +36,8 @@ export default class JsonBoxClient {
 
         this.offset += body.length
         events.push(...body.map(decryptFn))
+      } else if (this.offset === 0) {
+        return [{ command: 'empty', version: COMMAND_VERSION, data: {} }]
       }
 
       if (body.length >= CHUNK_SIZE || cached) {

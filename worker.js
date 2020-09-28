@@ -1,4 +1,4 @@
-const CACHE_KEY = 'v11a'
+const CACHE_KEY = 'v13'
 const UNSYNCED_KEY = 'unsynced'
 
 self.addEventListener('install', () => self.skipWaiting())

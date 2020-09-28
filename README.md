@@ -4,7 +4,7 @@ The progressive web app to share expenses among friends, useful for trips, share
 
 It is heavily inspired by [Tricount](https://www.tricount.com/), but completely free and open source. There is no app to install, no account to create. And with end-to-end encryption, your data is 100% private.
 
-It makes use of https://jsonbox.io/ to store the expenses.
+It makes use of https://jsonbox.io/ to store the expenses. __warning__: after 30 days of inactivity, the data will be permanently deleted from the online server. This is a policy of the public jsonbox instance.
 
 ## FAQ
 
