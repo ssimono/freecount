@@ -51,10 +51,11 @@ export default function main () {
     ['sync', sync(client)],
     ['app:syncerror', ({ detail }) => alert(detail)],
     ['app:postcommand', postCommand(client)],
-    ['app:just_did_init_trip', () => {
+    ['app:just_did_init_trip', ({ target, detail }) => {
+      dispatch(target, 'local:storetrip', trip => ({ ...trip, title: detail.name }))
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.set('box', boxId)
-      window.location.assign(newUrl.href)
+      setTimeout(() => window.location.assign(newUrl.href), 0)
     }],
     ['app:did_init_trip', ({ detail }) => {
       document.title = `${detail.name} | Freecount`

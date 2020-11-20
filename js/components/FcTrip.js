@@ -103,8 +103,6 @@ function onInitTrip ({ currentTarget, detail }) {
   )
 
   goTo('expenses')
-
-  dispatch(currentTarget, 'local:storetrip', trip => ({ ...trip, title: detail.name }))
 }
 
 function onNewExpense ({ detail }) {
