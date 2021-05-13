@@ -63,6 +63,12 @@ button,input[type="submit"] {
   animation: move-bg 5s linear infinite;
 }
 
+.sunset-warning {
+  background-color: orangered;
+  padding: 12px;
+  margin: 12px;
+}
+
 /* ===== General */
 ul {
   list-style-type: none;

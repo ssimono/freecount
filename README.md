@@ -2,6 +2,8 @@
 
 The progressive web app to share expenses among friends, useful for trips, shared living, restaurants and what not!
 
+**IMPORTANT**: Upcoming shutdown of https://freecount.s10a.dev Jsonbox has announced a shutdown of their free cloud instance on May 31st, 2021. At this point, Freecount won't work anymore. We are working on finding an alternate backend store, but can't guarantee that a switch can happen before jsonbox.io shuts down. Please restrain from creating new freecounts, and make sure to settle your pending debts before this date.
+
 It is heavily inspired by [Tricount](https://www.tricount.com/), but completely free and open source. There is no app to install, no account to create. And with end-to-end encryption, your data is 100% private.
 
 It makes use of https://jsonbox.io/ to store the expenses. __warning__: after 30 days of inactivity, the data will be permanently deleted from the online server. This is a policy of the public jsonbox instance.

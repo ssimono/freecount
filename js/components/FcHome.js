@@ -18,6 +18,13 @@ export default class FcHome extends HTMLElement {
 
 const initState = () => fragment`
   <h2>Let's start a trip</h2>
+  <section class="sunset-warning">
+    <h3>Upcoming shutdown of Freecount</h3>
+    <p><a href="https://jsonbox.io/" title="jsonbox">jsonbox.io</a> has announced a shutdown of their free cloud instance on <strong><time datetime="2021-05-31">May 31st, 2021</time></strong>. At this point, Freecount won't work anymore.</p>
+    <p>
+      Please restrain from creating new freecounts, and make sure to settle your pending debts before this date
+    </p>
+  </section>
   ${InitTripForm()}
   <div class="known-trips">
     <h3>Previous trips</h3>
