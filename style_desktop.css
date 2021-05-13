@@ -57,3 +57,4 @@ fc-home .init-trip { grid-area: form; }
 fc-home .known-trips { grid-area: known; }
 .known-trips a:hover { color: var(--headline); }
 fc-home footer { grid-area: footer; padding: 1rem 0; }
+.sunset-warning { grid-area: known; }
